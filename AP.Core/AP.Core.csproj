@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="User\Providers\ProjectMembershipProvider.cs" />
+    <Compile Remove="User\Providers\ProjectRoleProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="User\Providers\" />
+  </ItemGroup>
+
+</Project>

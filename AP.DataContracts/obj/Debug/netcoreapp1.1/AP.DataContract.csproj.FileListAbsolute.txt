@@ -1,0 +1,6 @@
+C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.DataContract.deps.json
+C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.DataContract.dll
+C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.DataContract.pdb
+C:\Projects\AutoPortal\AP.DataContracts\obj\Debug\netcoreapp1.1\AP.DataContract.AssemblyInfo.cs
+C:\Projects\AutoPortal\AP.DataContracts\obj\Debug\netcoreapp1.1\AP.DataContract.dll
+C:\Projects\AutoPortal\AP.DataContracts\obj\Debug\netcoreapp1.1\AP.DataContract.pdb

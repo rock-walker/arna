@@ -1,0 +1,15 @@
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.Infrastructure.deps.json
+C:\Projects\AutoPortal\AP.Infrastructure\obj\Debug\netcoreapp1.1\AP.Infrastructure.csprojResolveAssemblyReference.cache
+C:\Projects\AutoPortal\AP.Infrastructure\obj\Debug\netcoreapp1.1\AP.Infrastructure.AssemblyInfo.cs
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.Infrastructure.dll
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.Infrastructure.pdb
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.EntityModel.dll
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.Repository.dll
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.Repository.pdb
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.EntityModel.pdb
+C:\Projects\AutoPortal\AP.Infrastructure\obj\Debug\netcoreapp1.1\AP.Infrastructure.dll
+C:\Projects\AutoPortal\AP.Infrastructure\obj\Debug\netcoreapp1.1\AP.Infrastructure.pdb
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.ViewModel.dll
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.ViewModel.pdb
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.Model.dll
+C:\Projects\AutoPortal\AP.Infrastructure\bin\Debug\netcoreapp1.1\AP.Model.pdb

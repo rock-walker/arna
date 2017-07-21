@@ -1,0 +1,7 @@
+C:\Projects\AutoPortal\AP.Model\bin\Debug\netcoreapp1.1\AP.Model.deps.json
+C:\Projects\AutoPortal\AP.Model\bin\Debug\netcoreapp1.1\AP.Model.dll
+C:\Projects\AutoPortal\AP.Model\bin\Debug\netcoreapp1.1\AP.Model.pdb
+C:\Projects\AutoPortal\AP.Model\obj\Debug\netcoreapp1.1\AP.Model.AssemblyInfo.cs
+C:\Projects\AutoPortal\AP.Model\obj\Debug\netcoreapp1.1\AP.Model.dll
+C:\Projects\AutoPortal\AP.Model\obj\Debug\netcoreapp1.1\AP.Model.pdb
+C:\Projects\AutoPortal\AP.Model\obj\Debug\netcoreapp1.1\AP.Model.csprojResolveAssemblyReference.cache

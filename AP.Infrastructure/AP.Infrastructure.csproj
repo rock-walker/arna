@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AP.DataContracts\AP.ViewModel.csproj" />
+    <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+C:\Projects\AutoPortal\AP.EntityModesl\bin\Debug\netcoreapp1.1\AP.EntityModel.deps.json
+C:\Projects\AutoPortal\AP.EntityModesl\bin\Debug\netcoreapp1.1\AP.EntityModel.dll
+C:\Projects\AutoPortal\AP.EntityModesl\obj\Debug\netcoreapp1.1\AP.EntityModel.csprojResolveAssemblyReference.cache
+C:\Projects\AutoPortal\AP.EntityModesl\obj\Debug\netcoreapp1.1\AP.EntityModel.AssemblyInfo.cs
+C:\Projects\AutoPortal\AP.EntityModesl\bin\Debug\netcoreapp1.1\AP.EntityModel.pdb
+C:\Projects\AutoPortal\AP.EntityModesl\obj\Debug\netcoreapp1.1\AP.EntityModel.dll
+C:\Projects\AutoPortal\AP.EntityModesl\obj\Debug\netcoreapp1.1\AP.EntityModel.pdb
+C:\Projects\AutoPortal\AP.EntityModesl\bin\Debug\netcoreapp1.1\AP.ViewModel.dll
+C:\Projects\AutoPortal\AP.EntityModesl\bin\Debug\netcoreapp1.1\AP.ViewModel.pdb
+C:\Projects\AutoPortal\AP.EntityModesl\bin\Debug\netcoreapp1.1\AP.Model.dll
+C:\Projects\AutoPortal\AP.EntityModesl\bin\Debug\netcoreapp1.1\AP.Model.pdb

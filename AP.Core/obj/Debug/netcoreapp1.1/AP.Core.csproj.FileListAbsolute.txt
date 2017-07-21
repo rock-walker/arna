@@ -1,0 +1,6 @@
+C:\Projects\AutoPortal\AP.Core\bin\Debug\netcoreapp1.1\AP.Core.deps.json
+C:\Projects\AutoPortal\AP.Core\obj\Debug\netcoreapp1.1\AP.Core.AssemblyInfo.cs
+C:\Projects\AutoPortal\AP.Core\bin\Debug\netcoreapp1.1\AP.Core.dll
+C:\Projects\AutoPortal\AP.Core\bin\Debug\netcoreapp1.1\AP.Core.pdb
+C:\Projects\AutoPortal\AP.Core\obj\Debug\netcoreapp1.1\AP.Core.dll
+C:\Projects\AutoPortal\AP.Core\obj\Debug\netcoreapp1.1\AP.Core.pdb
