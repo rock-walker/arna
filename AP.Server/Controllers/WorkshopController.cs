@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using AP.ViewModel.Workshop;
 using AP.Business.AutoDomain.Workshop.Contracts;
+using AP.Server.Application;
+using System.Collections;
 
 namespace AP.Application
 {
@@ -30,6 +32,14 @@ namespace AP.Application
         public async Task<IEnumerable<WorkshopViewModel>> Get()
         {
             return await _workshop.GetAll();
+        }
+
+        [Route("id")]
+        public async Task<IEnumerable<WorkshopViewModel>> GetById(
+            [ModelBinder(BinderType = typeof(CommaDelimitedArrayModelBinder))]
+            IEnumerable<Guid> workshops)
+        {
+            return await _workshop.GetById(workshops);
         }
 
         // POST api/<controller>

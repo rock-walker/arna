@@ -20,6 +20,11 @@ namespace AP.Business.AutoDomain.Workshop.Services
             return await Task.Run(() => _repo.GetAll());
         }
 
+        public async Task<IEnumerable<WorkshopViewModel>> GetById(IEnumerable<Guid> ids)
+        {
+            return await Task.Run(() => _repo.GetById(ids));
+        }
+
         public Task<IEnumerable<WorkshopViewModel>> GetByCity(string city)
         {
             throw new NotImplementedException();
