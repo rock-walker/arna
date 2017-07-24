@@ -8,15 +8,15 @@
     ".NETCoreApp,Version=v1.1": {
       "ap.viewmodel/1.0.0": {
         "dependencies": {
-          "AP.Model": "1.0.0"
+          "AP.Business.Model": "1.0.0"
         },
         "runtime": {
           "AP.ViewModel.dll": {}
         }
       },
-      "ap.model/1.0.0": {
+      "ap.business.model/1.0.0": {
         "runtime": {
-          "AP.Model.dll": {}
+          "AP.Business.Model.dll": {}
         }
       }
     }
@@ -27,7 +27,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "ap.model/1.0.0": {
+    "ap.business.model/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

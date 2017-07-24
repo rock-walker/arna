@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using AP.ViewModel.Common;
 using AP.Repository.Common;
+using System.Linq;
+using AP.ViewModel.Mapper;
 
 namespace AP.Shared.Category
 {
@@ -16,12 +18,15 @@ namespace AP.Shared.Category
 
         public async Task<IEnumerable<MenuViewModel>> GetHierarchical()
         {
-            return await _categories.GetHierarchical();
+            var allMenu = await _categories.GetHierarchical();
+            return allMenu.Select(x => x.MapTo());
+
         }
 
         public async Task<IEnumerable<MenuViewModel>> GetTopLevel()
         {
-            return await _categories.GetTopLevel();
+            var topLevelMenu = await _categories.GetTopLevel();
+            return topLevelMenu.Select(x => x.MapTo());
         }
     }
 }

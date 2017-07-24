@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using AP.ViewModel.Workshop;
 using AP.Business.AutoDomain.Workshop.Contracts;
 using AP.Server.Application;
-using System.Collections;
 
 namespace AP.Application
 {

@@ -13,6 +13,7 @@ namespace AP.Repository.Workshop.Services
     public class WorkshopRepository : IWorkshopRepository
     {
         private readonly WorkshopContext _ctx;
+        private object _lockObject = new object();
 
         public WorkshopRepository(WorkshopContext context)
         {
@@ -45,16 +46,19 @@ namespace AP.Repository.Workshop.Services
 
         private IQueryable<EntityModel.AutoDomain.Workshop> QueryAllWorkshops()
         {
-            return _ctx.Workshops
-                    .Include(x => x.WorkshopCategories)
-                        .ThenInclude(x => x.Category)
-                    .Include(x => x.Contact)
-                    .Include(x => x.AutoBrand)
-                    .Include(x => x.Address)
-                        .ThenInclude(x => x.City)
-                    .Include(x => x.Location)
-                    .Include(x => x.Logo)
-                    .AsNoTracking();
+            lock (_lockObject)
+            {
+                return _ctx.Workshops
+                        .Include(x => x.WorkshopCategories)
+                            .ThenInclude(x => x.Category)
+                        .Include(x => x.Contact)
+                        .Include(x => x.AutoBrand)
+                        .Include(x => x.Address)
+                            .ThenInclude(x => x.City)
+                        .Include(x => x.Location)
+                        .Include(x => x.Logo)
+                        .AsNoTracking();
+            }
         }
     }
 }

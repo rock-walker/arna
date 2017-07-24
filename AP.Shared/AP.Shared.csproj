@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AP.DataContracts\AP.ViewModel.csproj" />
+    <ProjectReference Include="..\AP.Model\AP.Business.Model.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
   </ItemGroup>
 

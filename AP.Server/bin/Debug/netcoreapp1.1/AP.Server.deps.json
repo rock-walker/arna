@@ -1828,9 +1828,20 @@
           "AP.Business.AutoPortal.dll": {}
         }
       },
+      "ap.business.model/1.0.0": {
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.2"
+        },
+        "runtime": {
+          "AP.Business.Model.dll": {}
+        },
+        "compile": {
+          "AP.Business.Model.dll": {}
+        }
+      },
       "ap.entitymodel/1.0.0": {
         "dependencies": {
-          "AP.Model": "1.0.0",
+          "AP.Business.Model": "1.0.0",
           "AP.ViewModel": "1.0.0",
           "Microsoft.EntityFrameworkCore.SqlServer": "1.1.2",
           "Microsoft.NETCore.App": "1.1.2"
@@ -1840,17 +1851,6 @@
         },
         "compile": {
           "AP.EntityModel.dll": {}
-        }
-      },
-      "ap.model/1.0.0": {
-        "dependencies": {
-          "Microsoft.NETCore.App": "1.1.2"
-        },
-        "runtime": {
-          "AP.Model.dll": {}
-        },
-        "compile": {
-          "AP.Model.dll": {}
         }
       },
       "ap.repository/1.0.0": {
@@ -1869,6 +1869,7 @@
       },
       "ap.shared/1.0.0": {
         "dependencies": {
+          "AP.Business.Model": "1.0.0",
           "AP.Repository": "1.0.0",
           "AP.ViewModel": "1.0.0",
           "Microsoft.NETCore.App": "1.1.2"
@@ -1882,7 +1883,7 @@
       },
       "ap.viewmodel/1.0.0": {
         "dependencies": {
-          "AP.Model": "1.0.0",
+          "AP.Business.Model": "1.0.0",
           "Microsoft.NETCore.App": "1.1.2"
         },
         "runtime": {
@@ -4357,12 +4358,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "ap.entitymodel/1.0.0": {
+    "ap.business.model/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "ap.model/1.0.0": {
+    "ap.entitymodel/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

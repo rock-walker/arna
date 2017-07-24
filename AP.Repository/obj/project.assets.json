@@ -2615,20 +2615,20 @@
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
         }
       },
+      "AP.Business.Model/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.1",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.2"
+        }
+      },
       "AP.EntityModel/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
-          "AP.Model": "1.0.0",
+          "AP.Business.Model": "1.0.0",
           "AP.ViewModel": "1.0.0",
           "Microsoft.EntityFrameworkCore.SqlServer": "1.1.2",
-          "Microsoft.NETCore.App": "1.1.2"
-        }
-      },
-      "AP.Model/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v1.1",
-        "dependencies": {
           "Microsoft.NETCore.App": "1.1.2"
         }
       },
@@ -2636,7 +2636,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
-          "AP.Model": "1.0.0",
+          "AP.Business.Model": "1.0.0",
           "Microsoft.NETCore.App": "1.1.2"
         }
       }
@@ -7744,15 +7744,15 @@
         "system.xml.xpath.xdocument.nuspec"
       ]
     },
+    "AP.Business.Model/1.0.0": {
+      "type": "project",
+      "path": "../AP.Model/AP.Business.Model.csproj",
+      "msbuildProject": "../AP.Model/AP.Business.Model.csproj"
+    },
     "AP.EntityModel/1.0.0": {
       "type": "project",
       "path": "../AP.EntityModesl/AP.EntityModel.csproj",
       "msbuildProject": "../AP.EntityModesl/AP.EntityModel.csproj"
-    },
-    "AP.Model/1.0.0": {
-      "type": "project",
-      "path": "../AP.Model/AP.Model.csproj",
-      "msbuildProject": "../AP.Model/AP.Model.csproj"
     },
     "AP.ViewModel/1.0.0": {
       "type": "project",

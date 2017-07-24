@@ -7042,9 +7042,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Model.csproj",
-      "projectName": "AP.Model",
-      "projectPath": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Model.csproj",
+      "projectUniqueName": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj",
+      "projectName": "AP.Business.Model",
+      "projectPath": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj",
       "outputPath": "C:\\Projects\\AutoPortal\\AP.Model\\obj\\",
       "projectStyle": "PackageReference",
       "originalTargetFrameworks": [

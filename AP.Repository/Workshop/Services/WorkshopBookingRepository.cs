@@ -1,4 +1,5 @@
-﻿using AP.EntityModel.Mappers;
+﻿using AP.Business.Model.Workshop;
+using AP.EntityModel.Mappers;
 using AP.Repository.Context;
 using AP.Repository.Workshop.Contracts;
 using AP.ViewModel.Workshop;
@@ -19,7 +20,7 @@ namespace AP.Repository.Workshop.Services
             _ctx = context;
         }
 
-        public async Task<IEnumerable<BookingMomentViewModel>> GetMomentBookings(IEnumerable<Guid> workshops)
+        public async Task<IEnumerable<BookingMomentModel>> GetMomentBookings(IEnumerable<Guid> workshops)
         {
             return await Task.Run(() =>
             {

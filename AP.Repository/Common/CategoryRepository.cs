@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AP.ViewModel.Common;
 using AP.Repository.Infrastructure;
 using AP.Repository.Context;
 using AP.EntityModel.Common;
 using AP.EntityModel.Mappers;
+using AP.Business.Model.Common;
 
 namespace AP.Repository.Common
 {
@@ -18,7 +18,7 @@ namespace AP.Repository.Common
             _ctx = context;
         }
 
-        public async Task<IEnumerable<MenuViewModel>> GetHierarchical()
+        public async Task<IEnumerable<CategoryModel>> GetHierarchical()
         {
             var menu = await Task.Run(() =>
             {
@@ -36,7 +36,7 @@ namespace AP.Repository.Common
             return menu;
         }
 
-        public async Task<IEnumerable<MenuViewModel>> GetTopLevel()
+        public async Task<IEnumerable<CategoryModel>> GetTopLevel()
         {
             var result = await Task.Run(() =>
             {

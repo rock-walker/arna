@@ -2615,7 +2615,7 @@
           "lib/netstandard1.3/System.Xml.XPath.XDocument.dll": {}
         }
       },
-      "AP.Model/1.0.0": {
+      "AP.Business.Model/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -2626,7 +2626,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
-          "AP.Model": "1.0.0",
+          "AP.Business.Model": "1.0.0",
           "Microsoft.NETCore.App": "1.1.2"
         }
       }
@@ -7734,10 +7734,10 @@
         "system.xml.xpath.xdocument.nuspec"
       ]
     },
-    "AP.Model/1.0.0": {
+    "AP.Business.Model/1.0.0": {
       "type": "project",
-      "path": "../AP.Model/AP.Model.csproj",
-      "msbuildProject": "../AP.Model/AP.Model.csproj"
+      "path": "../AP.Model/AP.Business.Model.csproj",
+      "msbuildProject": "../AP.Model/AP.Business.Model.csproj"
     },
     "AP.ViewModel/1.0.0": {
       "type": "project",
@@ -7747,7 +7747,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v1.1": [
-      "AP.Model >= 1.0.0",
+      "AP.Business.Model >= 1.0.0",
       "AP.ViewModel >= 1.0.0",
       "Microsoft.EntityFrameworkCore.SqlServer >= 1.1.2",
       "Microsoft.NETCore.App >= 1.1.2"
@@ -7770,11 +7770,11 @@
       "frameworks": {
         "netcoreapp1.1": {
           "projectReferences": {
-            "C:\\Projects\\AutoPortal\\AP.Model\\AP.Model.csproj": {
-              "projectPath": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Model.csproj"
-            },
             "C:\\Projects\\AutoPortal\\AP.DataContracts\\AP.ViewModel.csproj": {
               "projectPath": "C:\\Projects\\AutoPortal\\AP.DataContracts\\AP.ViewModel.csproj"
+            },
+            "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj": {
+              "projectPath": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj"
             }
           }
         }

@@ -192,9 +192,14 @@
           }
         }
       },
+      "ap.business.model/1.0.0": {
+        "runtime": {
+          "AP.Business.Model.dll": {}
+        }
+      },
       "ap.entitymodel/1.0.0": {
         "dependencies": {
-          "AP.Model": "1.0.0",
+          "AP.Business.Model": "1.0.0",
           "AP.ViewModel": "1.0.0",
           "Microsoft.EntityFrameworkCore.SqlServer": "1.1.2"
         },
@@ -202,14 +207,9 @@
           "AP.EntityModel.dll": {}
         }
       },
-      "ap.model/1.0.0": {
-        "runtime": {
-          "AP.Model.dll": {}
-        }
-      },
       "ap.viewmodel/1.0.0": {
         "dependencies": {
-          "AP.Model": "1.0.0"
+          "AP.Business.Model": "1.0.0"
         },
         "runtime": {
           "AP.ViewModel.dll": {}
@@ -370,12 +370,12 @@
       "path": "system.text.encoding.codepages/4.3.0",
       "hashPath": "system.text.encoding.codepages.4.3.0.nupkg.sha512"
     },
-    "ap.entitymodel/1.0.0": {
+    "ap.business.model/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "ap.model/1.0.0": {
+    "ap.entitymodel/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

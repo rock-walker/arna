@@ -1,13 +1,13 @@
 ﻿using AP.Model.Enums;
 using AP.ViewModel.Common;
 using System;
+using System.Collections.Generic;
 
 namespace AP.ViewModel.Workshop
 {
     public class BookingMomentViewModel
     {
-        public Guid WorkshopId { get; set; }
-        public MenuViewModel Category { get; set; }
-        public WorkshopStatus MomentStatus { get; set; }
+        public WorkshopViewModel Workshop { get; set; }
+        public IEnumerable<CategoryBookingViewModel> BookingMoments { get; set; }
     }
 }

@@ -1,12 +1,12 @@
-﻿using AP.ViewModel.Workshop;
+﻿using AP.Business.Model.Workshop;
 
 namespace AP.EntityModel.Mappers
 {
     public static class WorkshopMomentBookingMapper
     {
-        public static BookingMomentViewModel MapTo(this AutoDomain.WorkshopCategory data)
+        public static BookingMomentModel MapTo(this AutoDomain.WorkshopCategory data)
         {
-            return new BookingMomentViewModel
+            return new BookingMomentModel
             {
                 Category = data.Category.MapTo(),
                 MomentStatus = data.MomentBookingState,

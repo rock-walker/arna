@@ -1,14 +1,14 @@
-﻿using AP.ViewModel.Common;
-using AP.EntityModel.Common;
+﻿using AP.EntityModel.Common;
 using System.Linq;
+using AP.Business.Model.Common;
 
 namespace AP.EntityModel.Mappers
 {
     public static class CategoryMapper
     {
-        public static MenuViewModel MapTo(this Category source)
+        public static CategoryModel MapTo(this Category source)
         {
-            return new MenuViewModel
+            return new CategoryModel
             {
                 Id = source.Id,
                 Parent = source.Parent,
