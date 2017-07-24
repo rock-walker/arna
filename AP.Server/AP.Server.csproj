@@ -26,7 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AP.Business.AutoPortal\AP.Business.AutoPortal.csproj" />
-    <ProjectReference Include="..\AP.DataContracts\AP.ViewModel.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
     <ProjectReference Include="..\AP.Shared\AP.Shared.csproj" />
   </ItemGroup>

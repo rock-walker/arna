@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Core", "AP.Core\AP.Core.csproj", "{63C9B4BD-3B92-4438-AC9C-2BEA7788300A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.ViewModel", "AP.DataContracts\AP.ViewModel.csproj", "{98AFAFBD-16BF-496A-BFA8-3A26FC2E1DF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.ViewModel", "AP.ViewModel\AP.ViewModel.csproj", "{98AFAFBD-16BF-496A-BFA8-3A26FC2E1DF4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Infrastructure", "AP.Infrastructure\AP.Infrastructure.csproj", "{07A2B359-67C9-407D-8F91-FF044A8D9334}"
 EndProject

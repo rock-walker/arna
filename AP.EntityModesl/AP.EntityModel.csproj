@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AP.Business.Model\AP.Business.Model.csproj" />
-    <ProjectReference Include="..\AP.DataContracts\AP.ViewModel.csproj" />
+    <ProjectReference Include="..\AP.ViewModel\AP.ViewModel.csproj" />
   </ItemGroup>
 
 </Project>

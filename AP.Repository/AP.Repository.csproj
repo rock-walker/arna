@@ -9,7 +9,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AP.DataContracts\AP.ViewModel.csproj" />
     <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
   </ItemGroup>
 
