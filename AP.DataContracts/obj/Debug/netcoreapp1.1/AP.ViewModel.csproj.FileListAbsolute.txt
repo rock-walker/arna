@@ -1,9 +1,0 @@
-C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.ViewModel.deps.json
-C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.ViewModel.dll
-C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.ViewModel.pdb
-C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.Business.Model.dll
-C:\Projects\AutoPortal\AP.DataContracts\bin\Debug\netcoreapp1.1\AP.Business.Model.pdb
-C:\Projects\AutoPortal\AP.DataContracts\obj\Debug\netcoreapp1.1\AP.ViewModel.csprojResolveAssemblyReference.cache
-C:\Projects\AutoPortal\AP.DataContracts\obj\Debug\netcoreapp1.1\AP.ViewModel.AssemblyInfo.cs
-C:\Projects\AutoPortal\AP.DataContracts\obj\Debug\netcoreapp1.1\AP.ViewModel.dll
-C:\Projects\AutoPortal\AP.DataContracts\obj\Debug\netcoreapp1.1\AP.ViewModel.pdb
