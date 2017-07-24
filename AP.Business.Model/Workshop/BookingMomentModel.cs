@@ -1,5 +1,5 @@
 ﻿using AP.Business.Model.Common;
-using AP.Model.Enums;
+using AP.Business.Model.Enums;
 using System;
 
 namespace AP.Business.Model.Workshop

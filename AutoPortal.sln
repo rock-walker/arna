@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Server", "AP.Server\AP.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Business.AutoPortal", "AP.Business.AutoPortal\AP.Business.AutoPortal.csproj", "{0407C350-6026-4434-AB16-55EF04DA8C18}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Business.Model", "AP.Model\AP.Business.Model.csproj", "{78710C05-19F9-48EB-A88D-8A30CA7B4970}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Business.Model", "AP.Business.Model\AP.Business.Model.csproj", "{78710C05-19F9-48EB-A88D-8A30CA7B4970}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

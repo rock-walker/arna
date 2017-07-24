@@ -7746,8 +7746,8 @@
     },
     "AP.Business.Model/1.0.0": {
       "type": "project",
-      "path": "../AP.Model/AP.Business.Model.csproj",
-      "msbuildProject": "../AP.Model/AP.Business.Model.csproj"
+      "path": "../AP.Business.Model/AP.Business.Model.csproj",
+      "msbuildProject": "../AP.Business.Model/AP.Business.Model.csproj"
     },
     "AP.EntityModel/1.0.0": {
       "type": "project",

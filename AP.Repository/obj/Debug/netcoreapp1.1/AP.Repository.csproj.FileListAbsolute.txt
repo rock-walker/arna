@@ -1,6 +1,4 @@
 C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.Repository.deps.json
-C:\Projects\AutoPortal\AP.Repository\obj\Debug\netcoreapp1.1\AP.Repository.AssemblyInfo.cs
-C:\Projects\AutoPortal\AP.Repository\obj\Debug\netcoreapp1.1\AP.Repository.csprojResolveAssemblyReference.cache
 C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.Repository.dll
 C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.Repository.pdb
 C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.Business.Model.dll
@@ -9,5 +7,7 @@ C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.ViewModel.dll
 C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.ViewModel.pdb
 C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.EntityModel.pdb
 C:\Projects\AutoPortal\AP.Repository\bin\Debug\netcoreapp1.1\AP.Business.Model.pdb
+C:\Projects\AutoPortal\AP.Repository\obj\Debug\netcoreapp1.1\AP.Repository.csprojResolveAssemblyReference.cache
+C:\Projects\AutoPortal\AP.Repository\obj\Debug\netcoreapp1.1\AP.Repository.AssemblyInfo.cs
 C:\Projects\AutoPortal\AP.Repository\obj\Debug\netcoreapp1.1\AP.Repository.dll
 C:\Projects\AutoPortal\AP.Repository\obj\Debug\netcoreapp1.1\AP.Repository.pdb

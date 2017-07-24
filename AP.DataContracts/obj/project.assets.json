@@ -7039,8 +7039,8 @@
     },
     "AP.Business.Model/1.0.0": {
       "type": "project",
-      "path": "../AP.Model/AP.Business.Model.csproj",
-      "msbuildProject": "../AP.Model/AP.Business.Model.csproj"
+      "path": "../AP.Business.Model/AP.Business.Model.csproj",
+      "msbuildProject": "../AP.Business.Model/AP.Business.Model.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -7066,8 +7066,8 @@
       "frameworks": {
         "netcoreapp1.1": {
           "projectReferences": {
-            "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj": {
-              "projectPath": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj"
+            "C:\\Projects\\AutoPortal\\AP.Business.Model\\AP.Business.Model.csproj": {
+              "projectPath": "C:\\Projects\\AutoPortal\\AP.Business.Model\\AP.Business.Model.csproj"
             }
           }
         }

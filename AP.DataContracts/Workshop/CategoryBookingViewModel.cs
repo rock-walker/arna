@@ -1,5 +1,4 @@
-﻿using AP.Model.Enums;
-using AP.ViewModel.Common;
+﻿using AP.Business.Model.Enums;
 
 namespace AP.ViewModel.Workshop
 {

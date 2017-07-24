@@ -1,4 +1,4 @@
-﻿namespace AP.Model.Enums
+﻿namespace AP.Business.Model.Enums
 {
     public enum WorkshopStatus : short
     {

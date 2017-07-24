@@ -7756,8 +7756,8 @@
     },
     "AP.Business.Model/1.0.0": {
       "type": "project",
-      "path": "../AP.Model/AP.Business.Model.csproj",
-      "msbuildProject": "../AP.Model/AP.Business.Model.csproj"
+      "path": "../AP.Business.Model/AP.Business.Model.csproj",
+      "msbuildProject": "../AP.Business.Model/AP.Business.Model.csproj"
     },
     "AP.EntityModel/1.0.0": {
       "type": "project",
@@ -7803,11 +7803,11 @@
             "C:\\Projects\\AutoPortal\\AP.DataContracts\\AP.ViewModel.csproj": {
               "projectPath": "C:\\Projects\\AutoPortal\\AP.DataContracts\\AP.ViewModel.csproj"
             },
-            "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj": {
-              "projectPath": "C:\\Projects\\AutoPortal\\AP.Model\\AP.Business.Model.csproj"
-            },
             "C:\\Projects\\AutoPortal\\AP.Repository\\AP.Repository.csproj": {
               "projectPath": "C:\\Projects\\AutoPortal\\AP.Repository\\AP.Repository.csproj"
+            },
+            "C:\\Projects\\AutoPortal\\AP.Business.Model\\AP.Business.Model.csproj": {
+              "projectPath": "C:\\Projects\\AutoPortal\\AP.Business.Model\\AP.Business.Model.csproj"
             }
           }
         }

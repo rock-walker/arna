@@ -1,7 +1,4 @@
-﻿using AP.Model.Enums;
-using AP.ViewModel.Common;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace AP.ViewModel.Workshop
 {
