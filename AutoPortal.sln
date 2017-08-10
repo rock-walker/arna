@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Business.AutoPortal", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Business.Model", "AP.Business.Model\AP.Business.Model.csproj", "{78710C05-19F9-48EB-A88D-8A30CA7B4970}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AP.Core.Model", "AP.Core.Model\AP.Core.Model.csproj", "{D95CCC7F-DC36-4F6E-BA36-477DF65EFABA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{78710C05-19F9-48EB-A88D-8A30CA7B4970}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78710C05-19F9-48EB-A88D-8A30CA7B4970}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78710C05-19F9-48EB-A88D-8A30CA7B4970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D95CCC7F-DC36-4F6E-BA36-477DF65EFABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D95CCC7F-DC36-4F6E-BA36-477DF65EFABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D95CCC7F-DC36-4F6E-BA36-477DF65EFABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D95CCC7F-DC36-4F6E-BA36-477DF65EFABA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

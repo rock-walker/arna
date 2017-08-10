@@ -43,6 +43,8 @@ namespace AP.Server
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            app.UseIdentity();
+
             app.UseMvc();
             
         }

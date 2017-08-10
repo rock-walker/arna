@@ -1,6 +1,9 @@
-﻿using AP.EntityModel.AutoDomain;
+﻿using AP.Core.Model.User;
+using AP.EntityModel.AutoDomain;
 using AP.EntityModel.Common;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
 using static AP.EntityModel.Common.DomainModels;
 
 namespace AP.Repository.Context
@@ -20,6 +23,7 @@ namespace AP.Repository.Context
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            //base.OnModelCreating(builder);
             builder.Entity<EntityModel.AutoDomain.Workshop>().ToTable("Workshop");
             builder.Entity<Category>().ToTable("Categories");
             builder.Entity<Contact>().ToTable("Contacts");

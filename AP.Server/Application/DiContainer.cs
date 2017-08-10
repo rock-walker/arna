@@ -1,4 +1,5 @@
-﻿using AP.Repository.Common;
+﻿using System;
+using AP.Repository.Common;
 using AP.Repository.Context;
 using AP.Shared.Category;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,11 @@ using AP.Repository.Workshop.Contracts;
 using AP.Repository.Workshop.Services;
 using AP.Business.AutoDomain.Workshop.Services;
 using AP.Business.AutoDomain.Workshop.Contracts;
+using AP.Core.Model.User;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Builder;
+using AP.Shared.Sender.Contracts;
+using AP.Shared.Sender.Services;
 
 namespace AP.Server.Application
 {
@@ -34,6 +40,8 @@ namespace AP.Server.Application
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IWorkshopService, WorkshopService>();
             services.AddScoped<IWorkshopBookingService, WorkshopBookingService>();
+            services.AddScoped<IEmailSender, AuthMessageSender>();
+            services.AddScoped<ISmsSender, AuthMessageSender>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
@@ -49,6 +57,34 @@ namespace AP.Server.Application
 
             services.AddDbContext<GeneralContext>(options => options.UseSqlServer(connectionString));
             services.AddDbContext<WorkshopContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<IdentityContext>(options => options.UseSqlServer(connectionString));
+
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
+                .AddEntityFrameworkStores<IdentityContext, Guid>()
+                .AddDefaultTokenProviders();
+
+            // Configure Identity
+            services.Configure<IdentityOptions>(options =>
+            {
+                // Password settings
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = false;
+
+                // Lockout settings
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+
+                // Cookie settings
+                options.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromDays(150);
+                options.Cookies.ApplicationCookie.LoginPath = "/Account/LogIn";
+                options.Cookies.ApplicationCookie.LogoutPath = "/Account/LogOut";
+
+                // User settings
+                options.User.RequireUniqueEmail = true;
+            });
         }
     }
 }

@@ -5,10 +5,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
+    <Compile Remove="Migrations\00000000000000_CreateIdentitySchema.cs" />
+    <Compile Remove="Migrations\00000000000000_CreateIdentitySchema.Designer.cs" />
+    <Compile Remove="Migrations\ApplicationDbContextModelSnapshot.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
     <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
   </ItemGroup>
 

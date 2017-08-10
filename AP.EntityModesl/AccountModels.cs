@@ -27,7 +27,7 @@ namespace EL.EntityModel
         //public int User
     }
 
-    [Table("webpages_Roles")]
+    [Table("Roles")]
     public class UserRole
     {
         [Key]
@@ -36,7 +36,7 @@ namespace EL.EntityModel
         public string RoleName { get; set; }
     }
 
-    [Table("webpages_UsersInRoles")]
+    [Table("UsersInRoles")]
     public class UserInRole
     {
         [Key]
