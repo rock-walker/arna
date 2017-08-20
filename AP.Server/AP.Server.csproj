@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <PackageTargetFallback>portable-net45+win8</PackageTargetFallback>
+    <UserSecretsId>ac0c1d7a-5710-4acc-bb47-cb0dde1e0968</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,10 +27,12 @@
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AP.Business.AutoPortal\AP.Business.AutoPortal.csproj" />
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
+    <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
     <ProjectReference Include="..\AP.Shared\AP.Shared.csproj" />
   </ItemGroup>

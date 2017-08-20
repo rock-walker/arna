@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AP.Core.Model.User
 {
-    public class ApplicationRole : IdentityRole<Guid>
+    public class ApplicationRole : IdentityRole<Guid>//, ApplicationUserRole, ApplicationRoleClaim>
     {
+        public ApplicationRole(string rolename) : base(rolename) { }
+        public ApplicationRole() : base() { }
     }
 }

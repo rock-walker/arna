@@ -10,10 +10,10 @@ using AP.Repository.Workshop.Services;
 using AP.Business.AutoDomain.Workshop.Services;
 using AP.Business.AutoDomain.Workshop.Contracts;
 using AP.Core.Model.User;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using AP.Shared.Sender.Contracts;
 using AP.Shared.Sender.Services;
+using AP.Core.Model.Authentication;
 
 namespace AP.Server.Application
 {
@@ -33,6 +33,8 @@ namespace AP.Server.Application
             RegisterControllers(services);
             RegisterRepositories(services);
             RegisterDbContexts(services, configuration);
+
+            RegisterAuthentication(services, configuration);
         }
 
         private static void RegisterControllers(IServiceCollection services)
@@ -40,8 +42,8 @@ namespace AP.Server.Application
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IWorkshopService, WorkshopService>();
             services.AddScoped<IWorkshopBookingService, WorkshopBookingService>();
-            services.AddScoped<IEmailSender, AuthMessageSender>();
-            services.AddScoped<ISmsSender, AuthMessageSender>();
+            services.AddScoped<IEmailSender, AuthEmailSenderService>();
+            services.AddScoped<ISmsSender, TwilioSmsSenderService>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
@@ -59,7 +61,11 @@ namespace AP.Server.Application
             services.AddDbContext<WorkshopContext>(options => options.UseSqlServer(connectionString));
             services.AddDbContext<IdentityContext>(options => options.UseSqlServer(connectionString));
 
-            services.AddIdentity<ApplicationUser, ApplicationRole>()
+            services.AddIdentity<ApplicationUser, ApplicationRole>(configuration =>
+                {
+                    configuration.SignIn.RequireConfirmedEmail = false;
+                    configuration.SignIn.RequireConfirmedPhoneNumber = true;
+                })
                 .AddEntityFrameworkStores<IdentityContext, Guid>()
                 .AddDefaultTokenProviders();
 
@@ -67,12 +73,14 @@ namespace AP.Server.Application
             services.Configure<IdentityOptions>(options =>
             {
                 // Password settings
+#if DEBUG
+#else
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = false;
-
+#endif
                 // Lockout settings
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
                 options.Lockout.MaxFailedAccessAttempts = 10;
@@ -85,6 +93,12 @@ namespace AP.Server.Application
                 // User settings
                 options.User.RequireUniqueEmail = true;
             });
+        }
+
+        private static void RegisterAuthentication(IServiceCollection services, IConfiguration config)
+        {
+            services.Configure<AuthMessageSenderOptions>(config);
+            services.Configure<TwilioSmsOptions>(config);
         }
     }
 }

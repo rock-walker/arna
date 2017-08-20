@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using AP.ViewModel.Workshop;
 using AP.Business.AutoDomain.Workshop.Contracts;
 using AP.Server.Application;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AP.Application
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     public class WorkshopController : Controller
     {
