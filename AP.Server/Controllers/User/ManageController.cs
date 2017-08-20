@@ -8,10 +8,12 @@ using Microsoft.Extensions.Options;
 using AP.Core.Model.User;
 using AP.Shared.Sender.Contracts;
 using AP.ViewModel.Account.Manage;
+using AP.ViewModel.Account;
 
 namespace AP.Server.Controllers.User
 {
     [Authorize]
+    [Route("api/[controller]/[action]")]
     public class ManageController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -40,15 +42,15 @@ namespace AP.Server.Controllers.User
         //
         // GET: /Manage/Index
         [HttpGet]
-        public async Task<IActionResult> Index(ManageMessageId? message = null)
+        public async Task<IActionResult> Index(AccountApiResult? message = null)
         {
             ViewData["StatusMessage"] =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
-                : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
+                message == AccountApiResult.ChangePasswordSuccess ? "Your password has been changed."
+                : message == AccountApiResult.SetPasswordSuccess ? "Your password has been set."
+                : message == AccountApiResult.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
+                : message == AccountApiResult.Error ? "An error has occurred."
+                : message == AccountApiResult.AddPhoneSuccess ? "Your phone number was added."
+                : message == AccountApiResult.RemovePhoneSuccess ? "Your phone number was removed."
                 : "";
 
             var user = await GetCurrentUserAsync();
@@ -70,10 +72,9 @@ namespace AP.Server.Controllers.User
         //
         // POST: /Manage/RemoveLogin
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveLogin(RemoveLoginViewModel account)
         {
-            ManageMessageId? message = ManageMessageId.Error;
+            AccountApiResult? message = AccountApiResult.Error;
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
@@ -81,23 +82,15 @@ namespace AP.Server.Controllers.User
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    message = ManageMessageId.RemoveLoginSuccess;
+                    message = AccountApiResult.RemoveLoginSuccess;
                 }
             }
             return RedirectToAction(nameof(ManageLogins), new { Message = message });
         }
 
         //
-        // GET: /Manage/AddPhoneNumber
-        public IActionResult AddPhoneNumber()
-        {
-            return View();
-        }
-
-        //
         // POST: /Manage/AddPhoneNumber
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberViewModel model)
         {
             if (!ModelState.IsValid)
@@ -118,7 +111,6 @@ namespace AP.Server.Controllers.User
         //
         // POST: /Manage/EnableTwoFactorAuthentication
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableTwoFactorAuthentication()
         {
             var user = await GetCurrentUserAsync();
@@ -134,7 +126,6 @@ namespace AP.Server.Controllers.User
         //
         // POST: /Manage/DisableTwoFactorAuthentication
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableTwoFactorAuthentication()
         {
             var user = await GetCurrentUserAsync();
@@ -159,13 +150,12 @@ namespace AP.Server.Controllers.User
             }
             var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
             // Send an SMS to verify the phone number
-            return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
+            return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { Phone = phoneNumber });
         }
 
         //
         // POST: /Manage/VerifyPhoneNumber
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model)
         {
             if (!ModelState.IsValid)
@@ -175,11 +165,11 @@ namespace AP.Server.Controllers.User
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await _userManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
+                var result = await _userManager.ChangePhoneNumberAsync(user, model.Phone, model.Code);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.AddPhoneSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.AddPhoneSuccess });
                 }
             }
             // If we got this far, something failed, redisplay the form
@@ -190,7 +180,6 @@ namespace AP.Server.Controllers.User
         //
         // POST: /Manage/RemovePhoneNumber
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemovePhoneNumber()
         {
             var user = await GetCurrentUserAsync();
@@ -200,10 +189,10 @@ namespace AP.Server.Controllers.User
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.RemovePhoneSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.RemovePhoneSuccess });
                 }
             }
-            return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+            return RedirectToAction(nameof(Index), new { Message = AccountApiResult.Error });
         }
 
         //
@@ -217,7 +206,6 @@ namespace AP.Server.Controllers.User
         //
         // POST: /Manage/ChangePassword
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -232,12 +220,12 @@ namespace AP.Server.Controllers.User
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation(3, "User changed their password successfully.");
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.ChangePasswordSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.ChangePasswordSuccess });
                 }
                 AddErrors(result);
                 return View(model);
             }
-            return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+            return RedirectToAction(nameof(Index), new { Message = AccountApiResult.Error });
         }
 
         //
@@ -251,7 +239,6 @@ namespace AP.Server.Controllers.User
         //
         // POST: /Manage/SetPassword
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -266,22 +253,22 @@ namespace AP.Server.Controllers.User
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.SetPasswordSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.SetPasswordSuccess });
                 }
                 AddErrors(result);
                 return View(model);
             }
-            return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+            return RedirectToAction(nameof(Index), new { Message = AccountApiResult.Error });
         }
 
         //GET: /Manage/ManageLogins
         [HttpGet]
-        public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
+        public async Task<IActionResult> ManageLogins(AccountApiResult? message = null)
         {
             ViewData["StatusMessage"] =
-                message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
-                : message == ManageMessageId.AddLoginSuccess ? "The external login was added."
-                : message == ManageMessageId.Error ? "An error has occurred."
+                message == AccountApiResult.RemoveLoginSuccess ? "The external login was removed."
+                : message == AccountApiResult.AddLoginSuccess ? "The external login was added."
+                : message == AccountApiResult.Error ? "An error has occurred."
                 : "";
             var user = await GetCurrentUserAsync();
             if (user == null)
@@ -301,7 +288,6 @@ namespace AP.Server.Controllers.User
         //
         // POST: /Manage/LinkLogin
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> LinkLogin(string provider)
         {
             // Clear the existing external cookie to ensure a clean login process
@@ -326,13 +312,13 @@ namespace AP.Server.Controllers.User
             var info = await _signInManager.GetExternalLoginInfoAsync(await _userManager.GetUserIdAsync(user));
             if (info == null)
             {
-                return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
+                return RedirectToAction(nameof(ManageLogins), new { Message = AccountApiResult.Error });
             }
             var result = await _userManager.AddLoginAsync(user, info);
-            var message = ManageMessageId.Error;
+            var message = AccountApiResult.Error;
             if (result.Succeeded)
             {
-                message = ManageMessageId.AddLoginSuccess;
+                message = AccountApiResult.AddLoginSuccess;
                 // Clear the existing external cookie to ensure a clean login process
                 await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
             }
@@ -347,18 +333,6 @@ namespace AP.Server.Controllers.User
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
-        }
-
-        public enum ManageMessageId
-        {
-            AddPhoneSuccess,
-            AddLoginSuccess,
-            ChangePasswordSuccess,
-            SetTwoFactorSuccess,
-            SetPasswordSuccess,
-            RemoveLoginSuccess,
-            RemovePhoneSuccess,
-            Error
         }
 
         private Task<ApplicationUser> GetCurrentUserAsync()

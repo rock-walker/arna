@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace AP.ViewModel.Account.Manage
 {
@@ -10,6 +11,9 @@ namespace AP.ViewModel.Account.Manage
         [Required]
         [Phone]
         [Display(Name = "Phone number")]
-        public string PhoneNumber { get; set; }
+        public string Phone { get; set; }
+
+        [Required]
+        public Guid UserId { get; set; }
     }
 }

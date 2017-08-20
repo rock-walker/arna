@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.Options;
 using AP.ViewModel.Account;
 using AP.Core.Model.User;
 using AP.Shared.Sender.Contracts;
+using AP.ViewModel.Account.Manage;
 
 namespace WebApplication6.Controllers
 {
@@ -59,10 +59,8 @@ namespace WebApplication6.Controllers
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public async Task<AccountApiResult> Login(LoginViewModel model)
         {
-            ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
                 // This doesn't count login failures towards account lockout
@@ -71,26 +69,27 @@ namespace WebApplication6.Controllers
                 if (result.Succeeded)
                 {
                     _logger.LogInformation(1, "User logged in.");
-                    return RedirectToLocal(returnUrl);
+                    return AccountApiResult.LoggedInSuccess;
                 }
                 if (result.RequiresTwoFactor)
                 {
-                    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+                    return AccountApiResult.TwoFactorRequiresError;
+                    //return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
                 }
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning(2, "User account locked out.");
-                    return View("Lockout");
+                    return AccountApiResult.LockedOutPassordError;
                 }
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return View(model);
+                    return AccountApiResult.Error;
                 }
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return AccountApiResult.Error;
         }
 
         //
@@ -107,33 +106,79 @@ namespace WebApplication6.Controllers
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-        [Route("Register")]
-        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        public async Task<string> RegisterByEmail(RegisterViewModel model)
         {
-            ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=532713
-                    // Send an email with this link
-                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    //var callbackUrl = Url.Action(nameof(ConfirmEmail), "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-                    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-                    //    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action(nameof(ConfirmEmail), "Account",
+                        new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+                    await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
+                            $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
+
+                    // Comment out following line to prevent a new user automatically logged on.
+                    // await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation(3, "User created a new account with password.");
-                    
-                    //return RedirectToLocal(returnUrl);
+                    return code;
                 }
                 AddErrors(result);
             }
 
-            // If we got this far, something failed, redisplay form
-            return 
-            return View(model);
+            return null;
+        }
+
+        //
+        // POST: /Account/AddPhoneNumber
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<VerifyPhoneNumberViewModel> RegisterByPhoneNumber(RegisterMobileViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, PhoneNumber = model.Phone };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Phone);
+                    await _smsSender.SendSmsAsync(model.Phone, "Your security code is: " + code);
+                    return new VerifyPhoneNumberViewModel {
+                        Code = code,
+                        Phone = model.Phone,
+                        UserId = user.Id
+                    };
+                }
+            }
+
+            return null;
+        }
+
+        //
+        // POST: /Account/VerifyPhoneNumber
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<AccountApiResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return AccountApiResult.Error;
+            }
+            var user = await _userManager.FindByIdAsync(model.UserId.ToString());
+            if (user != null)
+            {
+                var result = await _userManager.ChangePhoneNumberAsync(user, model.Phone, model.Code);
+                if (result.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return AccountApiResult.AddPhoneSuccess;
+                }
+            }
+            // If we got this far, something failed, redisplay the form
+            ModelState.AddModelError(string.Empty, "Failed to verify phone number");
+            return AccountApiResult.Error;
         }
 
         //
@@ -236,19 +281,19 @@ namespace WebApplication6.Controllers
         // GET: /Account/ConfirmEmail
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<bool> ConfirmEmail(string userId, string code)
         {
             if (userId == null || code == null)
             {
-                return View("Error");
+                throw new ArgumentException("userId or code is null");
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return View("Error");
+                throw new Exception("User wasn't found");
             }
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            return result.Succeeded;
         }
 
         //
@@ -412,7 +457,6 @@ namespace WebApplication6.Controllers
         // POST: /Account/VerifyCode
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
         {
             if (!ModelState.IsValid)
@@ -469,6 +513,11 @@ namespace WebApplication6.Controllers
                 return null;
                 //return RedirectToAction(nameof(HomeController.Index), "Home");
             }
+        }
+
+        private Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            return _userManager.GetUserAsync(HttpContext.User);
         }
 
         #endregion

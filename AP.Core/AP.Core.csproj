@@ -14,4 +14,8 @@
     <Folder Include="User\Providers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
+  </ItemGroup>
+
 </Project>
