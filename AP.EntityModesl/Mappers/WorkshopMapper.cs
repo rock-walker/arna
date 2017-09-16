@@ -17,5 +17,15 @@ namespace AP.EntityModel.Mappers
                 Location = data.Location.MapTo()
             };
         }
+
+        public static WorkshopShortViewModel MapToShort(this AutoDomain.Workshop data)
+        {
+            return new WorkshopShortViewModel
+            {
+                Id = data.ID,
+                Name = data.Name,
+                Location = data.Location.MapTo()
+            };
+        }
     }
 }

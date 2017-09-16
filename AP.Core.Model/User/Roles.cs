@@ -4,19 +4,21 @@ namespace AP.Core.Model.User
 {
     public enum Roles
     {
-        [Value("Administrator")]
-        Administrator,
-
-        [Value("PowerUser")]
-        PowerUser,
-
-        [Value("Moderator")]
-        Moderator,
+        Invalid,
 
         [Value("Client")]
         Client,
 
         [Value("Master")]
-        Master
+        Master,
+
+        [Value("Administrator")]
+        Administrator = 2147159114,
+
+        [Value("PowerUser")]
+        PowerUser = 214713911,
+
+        [Value("Moderator")]
+        Moderator = 21479114
     }
 }

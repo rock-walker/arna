@@ -1,4 +1,5 @@
-﻿using AP.EntityModel.Common;
+﻿using AP.Core.GeoLocation;
+using AP.EntityModel.Common;
 using AP.ViewModel.Common;
 
 namespace AP.EntityModel.Mappers
@@ -9,8 +10,8 @@ namespace AP.EntityModel.Mappers
         {
             return new LocationViewModel
             {
-                Lat = data.Lat,
-                Lng = data.Lng
+                Lat = GeoLocation.ConvertRadiansToDegrees(data.Lat),
+                Lng = GeoLocation.ConvertRadiansToDegrees(data.Lng)
             };
         }
     }

@@ -9,6 +9,7 @@ namespace AP.Business.AutoDomain.Workshop.Contracts
     {
         Task<IEnumerable<WorkshopViewModel>> GetByCity(string city);
         Task<IEnumerable<WorkshopViewModel>> GetById(IEnumerable<Guid> id);
-        Task<IEnumerable<WorkshopViewModel>> GetAll();
+        Task<IEnumerable<WorkshopShortViewModel>> GetByLocation(double latitude, double longitude, double distance);
+        Task<IEnumerable<WorkshopShortViewModel>> GetAll();
     }
 }

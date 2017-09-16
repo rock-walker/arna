@@ -19,5 +19,9 @@ namespace AP.ViewModel.Account
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Please enter valid integer number")]
+        public int Role { get; set; }
     }
 }

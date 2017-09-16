@@ -1,9 +1,6 @@
-﻿using AP.Core.Model.User;
-using AP.EntityModel.AutoDomain;
+﻿using AP.EntityModel.AutoDomain;
 using AP.EntityModel.Common;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
 using static AP.EntityModel.Common.DomainModels;
 
 namespace AP.Repository.Context
@@ -20,6 +17,8 @@ namespace AP.Repository.Context
         public DbSet<AutoBrand> Autobrands { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<WorkshopCategory> WorkshopCategory { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<WorkshopAutoBrand> WorkshopAutoBrands { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,7 +31,9 @@ namespace AP.Repository.Context
             builder.Entity<City>().ToTable("Address.City");
             builder.Entity<AvatarImage>().ToTable("Avatars");
             builder.Entity<AutoBrand>().ToTable("AutoBrand");
+            builder.Entity<Country>().ToTable("Countries");
             builder.Entity<WorkshopCategory>().ToTable("WorkshopCategories");
+            builder.Entity<WorkshopAutoBrand>().ToTable("WorkshopAutobrands");
         }
     }
 }

@@ -14,6 +14,6 @@ namespace AP.ViewModel.Account.Manage
         public string Phone { get; set; }
 
         [Required]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 }

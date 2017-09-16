@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAcelISniMhEmA5hjkUB6DxAAAAAACAAAAAAAQZgAAAAEAACAAAAANnIOv3rZslnOPszErbZjidX+ZAu71V6p2Pwe9Xy35MgAAAAAOgAAAAAIAACAAAAA/o7KDQlYayeQKW/OQFreNVctlLQkPndSNCMRQyUTQhIAAAACNEcZQDOB67vnvQv9r3IdgIXXE9ON1gT/rP4jCNNAh1cS+TK+LrrLRPQ0hgl0/0oE2f+zlsdpqKqmN/HvRNv2vesUs5Fh4uBVIDKJ9qNfsDsKnVshV/xXQO32XuwLU9MTPIjCiDEp8n8+qJDJ4eEgMwEWo8HzIYhWuciWu6d09BEAAAABk2dMV0ogW4hIeyKtmCl3/dHF5WLX3cyOp5n0iORRKmLAlHB+WI6p0aIx6uOs1X0HAnt5pXh2C87qRP/WpAwEX</EncryptedPassword>
+    <_NewBackgroundProfile>False</_NewBackgroundProfile>
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="AutoPortalConnection">
+      <Value>Data Source=tcp:autoportal.database.windows.net,1433;Initial Catalog=AutoPortalDb1;User Id=rock-walker@autoportal;Password=celebrity99+</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+</Project>

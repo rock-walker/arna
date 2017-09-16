@@ -5,7 +5,7 @@ using System;
 
 namespace AP.Repository.Context
 {
-    public class IdentityContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>//, ApplicationUserClaim, 
+    public class IdentityContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>// ApplicationUserClaim, 
         //ApplicationUserRole, ApplicationUserLogin, ApplicationRoleClaim, ApplicationUserToken>
     {
         public IdentityContext(DbContextOptions<IdentityContext> options) : base(options)
@@ -20,10 +20,10 @@ namespace AP.Repository.Context
             builder.Entity<ApplicationUser>().ToTable("Users");
             builder.Entity<ApplicationRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
-            builder.Entity<ApplicationUserLogin>().ToTable("UserLogins");
+            builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
             builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
-            builder.Entity<ApplicationRoleClaim>().ToTable("RoleClaims");
-            builder.Entity<ApplicationUserToken>().ToTable("UserTokens");
+            builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+            builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
         }
     }
 }

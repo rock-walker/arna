@@ -4,7 +4,13 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <PackageTargetFallback>portable-net45+win8</PackageTargetFallback>
     <UserSecretsId>ac0c1d7a-5710-4acc-bb47-cb0dde1e0968</UserSecretsId>
+    <ApplicationInsightsResourceId>/subscriptions/d60aa7e9-0120-4b28-af93-0a9cca1fe3b7/resourcegroups/SimAuto/providers/microsoft.insights/components/simautos</ApplicationInsightsResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/d60aa7e9-0120-4b28-af93-0a9cca1fe3b7/resourceGroups/SimAuto/providers/microsoft.insights/components/simautos</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Properties\PublishProfiles\SimAuto - Web Deploy.pubxml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
@@ -35,6 +41,9 @@
     <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
     <ProjectReference Include="..\AP.Shared\AP.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
 </Project>

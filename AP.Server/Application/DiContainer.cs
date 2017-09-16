@@ -98,7 +98,7 @@ namespace AP.Server.Application
         private static void RegisterAuthentication(IServiceCollection services, IConfiguration config)
         {
             services.Configure<AuthMessageSenderOptions>(config);
-            services.Configure<TwilioSmsOptions>(config);
+            services.Configure<TwilioSmsOptions>(config.GetSection("Twilio"));
         }
     }
 }

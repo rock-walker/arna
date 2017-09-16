@@ -6,11 +6,13 @@ using AP.ViewModel.Workshop;
 using AP.Business.AutoDomain.Workshop.Contracts;
 using AP.Server.Application;
 using Microsoft.AspNetCore.Authorization;
+using AP.Core.Model.User;
+using AP.Core.Extensions.Attributes;
 
 namespace AP.Application
 {
-    [AllowAnonymous]
-    [Route("api/[controller]")]
+    //[Authorize(Roles = "Client, Master, Administrator, PowerUser, Moderator")]
+    [Route("api/[controller]/[action]")]
     public class WorkshopController : Controller
     {
         private readonly IWorkshopService _workshop;
@@ -29,10 +31,20 @@ namespace AP.Application
             return await _workshop.GetByCity(name);
         }
 
-        [Route("all")]
-        public async Task<IEnumerable<WorkshopViewModel>> Get()
+        [AllowAnonymous]
+        public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()
         {
             return await _workshop.GetAll();
+        }
+
+        [AllowAnonymous]
+        public async Task<IEnumerable<WorkshopShortViewModel>> GetAround(double latitude, double longitude, double distance)
+        {
+            if (distance < 0.1)
+            {
+                await Task.FromException(new ArgumentException("distance very close"));
+            }
+            return await _workshop.GetByLocation(latitude, longitude,  distance);
         }
 
         [Route("id")]

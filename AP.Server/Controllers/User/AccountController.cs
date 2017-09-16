@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using AP.ViewModel.Account;
+using AP.Core.Extensions.Attributes;
 using AP.Core.Model.User;
 using AP.Shared.Sender.Contracts;
 using AP.ViewModel.Account.Manage;
@@ -59,7 +60,7 @@ namespace WebApplication6.Controllers
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        public async Task<AccountApiResult> Login(LoginViewModel model)
+        public async Task<AccountApiResult> Login([FromBody]LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -106,7 +107,7 @@ namespace WebApplication6.Controllers
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-        public async Task<string> RegisterByEmail(RegisterViewModel model)
+        public async Task<AccountApiResult> RegisterByEmail(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -123,32 +124,46 @@ namespace WebApplication6.Controllers
                     // Comment out following line to prevent a new user automatically logged on.
                     // await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation(3, "User created a new account with password.");
-                    return code;
+                    return AccountApiResult.AddLoginSuccess;
                 }
                 AddErrors(result);
             }
 
-            return null;
+            return AccountApiResult.Error;
         }
 
         //
-        // POST: /Account/AddPhoneNumber
+        // POST: /Account/RegisterByPhoneNumber
         [HttpPost]
         [AllowAnonymous]
-        public async Task<VerifyPhoneNumberViewModel> RegisterByPhoneNumber(RegisterMobileViewModel model)
+        public async Task<VerifyPhoneNumberViewModel> RegisterByPhoneNumber([FromBody]RegisterMobileViewModel model)
         {
+            if (!Enum.IsDefined(typeof(Roles), model.Role))
+            {
+                return null;
+            }
+
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, PhoneNumber = model.Phone };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    PhoneNumber = model.Phone,
+                };
+
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    var role = (Roles)model.Role;
+
+                    await _userManager.AddToRoleAsync(user, role.GetValue());
                     var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Phone);
                     await _smsSender.SendSmsAsync(model.Phone, "Your security code is: " + code);
-                    return new VerifyPhoneNumberViewModel {
-                        Code = code,
+                    return new VerifyPhoneNumberViewModel
+                    {
                         Phone = model.Phone,
-                        UserId = user.Id
+                        UserId = user.Id.ToString()
                     };
                 }
             }
@@ -160,7 +175,7 @@ namespace WebApplication6.Controllers
         // POST: /Account/VerifyPhoneNumber
         [HttpPost]
         [AllowAnonymous]
-        public async Task<AccountApiResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model)
+        public async Task<AccountApiResult> VerifyPhoneNumber([FromBody]VerifyPhoneNumberViewModel model)
         {
             if (!ModelState.IsValid)
             {
