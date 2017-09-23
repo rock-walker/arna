@@ -10,7 +10,7 @@ namespace AP.EntityModel.AutoDomain
         public Guid WorkshopID { get; set; }
         public int AutoBrandID { get; set; }
 
-        public Workshop Workshop { get; set; }
+        public WorkshopData Workshop { get; set; }
         public AutoBrand AutoBrand { get; set; }
     }
 }

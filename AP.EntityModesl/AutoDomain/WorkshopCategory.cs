@@ -11,7 +11,7 @@ namespace AP.EntityModel.AutoDomain
         public int CategoryID { get; set; }
         public WorkshopStatus MomentBookingState { get; set; }
 
-        public Workshop WorkshopData { get; set; }
+        public WorkshopData Workshop { get; set; }
         public Category Category { get; set; }
     }
 }

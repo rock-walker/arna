@@ -20,6 +20,6 @@ namespace AP.EntityModel.AutoDomain
         public BookingStatus BookingStatus { get; set; }
 
         public ApplicationUser ApplicationUser { get; set; }
-        public Workshop Workshop { get; set; }
+        public WorkshopData Workshop { get; set; }
     }
 }

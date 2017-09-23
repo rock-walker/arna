@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AP.Core.GeoLocation;
-using Microsoft.Extensions.Configuration;
 
 namespace AP.Repository.Workshop.Services
 {
@@ -74,7 +73,7 @@ namespace AP.Repository.Workshop.Services
             });
         }
 
-        private IQueryable<EntityModel.AutoDomain.Workshop> QueryAllWorkshops()
+        private IQueryable<EntityModel.AutoDomain.WorkshopData> QueryAllWorkshops()
         {
             lock (_lockObject)
             {
@@ -82,7 +81,6 @@ namespace AP.Repository.Workshop.Services
                         .Include(x => x.WorkshopCategories)
                             .ThenInclude(x => x.Category)
                         .Include(x => x.Contact)
-                        .Include(x => x.AutoBrand)
                         .Include(x => x.Address)
                             .ThenInclude(x => x.City)
                         .Include(x => x.Location)
@@ -91,25 +89,23 @@ namespace AP.Repository.Workshop.Services
             }
         }
 
-        private EntityModel.AutoDomain.Workshop QueryShortWorkshops(Func<EntityModel.AutoDomain.Workshop, bool> condition)
+        private EntityModel.AutoDomain.WorkshopData QueryShortWorkshops(Func<EntityModel.AutoDomain.WorkshopData, bool> condition)
         {
             lock (_lockObject)
             {
                 return _ctx.Workshops
                         .Include(x => x.Location)
-                        .Include(x => x.AutoBrand)
                         .AsNoTracking()
                         .Where(condition)
                         .FirstOrDefault();
             }
         }
 
-        private IQueryable<EntityModel.AutoDomain.Workshop> QueryAllShortWorkshops()
+        private IQueryable<EntityModel.AutoDomain.WorkshopData> QueryAllShortWorkshops()
         {
             lock (_lockObject)
             {
                 return _ctx.Workshops
-                        .Include(x => x.AutoBrand)
                         .Include(x => x.Location)
                         .AsNoTracking();
             }

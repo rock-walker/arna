@@ -5,7 +5,7 @@ namespace AP.EntityModel.Mappers
 {
     public static class WorkshopMapper
     {
-        public static WorkshopViewModel MapTo(this AutoDomain.Workshop data)
+        public static WorkshopViewModel MapTo(this AutoDomain.WorkshopData data)
         {
             return new WorkshopViewModel
             {
@@ -18,7 +18,7 @@ namespace AP.EntityModel.Mappers
             };
         }
 
-        public static WorkshopShortViewModel MapToShort(this AutoDomain.Workshop data)
+        public static WorkshopShortViewModel MapToShort(this AutoDomain.WorkshopData data)
         {
             return new WorkshopShortViewModel
             {

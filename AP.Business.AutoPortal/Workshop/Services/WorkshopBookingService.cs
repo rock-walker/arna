@@ -5,7 +5,6 @@ using AP.Business.AutoDomain.Workshop.Contracts;
 using System.Collections.Generic;
 using AP.ViewModel.Workshop;
 using System.Linq;
-using AP.ViewModel.Mapper;
 
 namespace AP.Business.AutoDomain.Workshop.Services
 {

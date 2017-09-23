@@ -9,13 +9,12 @@ namespace AP.EntityModel.Common
 
         [StringLength(30)]
         public string Name { get; set; }
-        public string GoogleCode { get; set; }
 
         [StringLength(30)]
         public string Ru { get; set; }
 
         public Guid? CountryID { get; set; }
 
-        public virtual Country Country { get; set; }
+        public virtual CountryData Country { get; set; }
     }
 }

@@ -6,8 +6,6 @@ using AP.ViewModel.Workshop;
 using AP.Business.AutoDomain.Workshop.Contracts;
 using AP.Server.Application;
 using Microsoft.AspNetCore.Authorization;
-using AP.Core.Model.User;
-using AP.Core.Extensions.Attributes;
 
 namespace AP.Application
 {

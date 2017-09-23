@@ -14,12 +14,18 @@ using Microsoft.AspNetCore.Builder;
 using AP.Shared.Sender.Contracts;
 using AP.Shared.Sender.Services;
 using AP.Core.Model.Authentication;
+using AP.Business.AutoPortal.Workshop.Contracts;
+using AP.Business.AutoPortal.Workshop.Services;
+using EntityFramework.DbContextScope.Interfaces;
+using EntityFramework.DbContextScope;
+using AP.Repository.Infrastructure;
 
 namespace AP.Server.Application
 {
     public class DiContainer
     {
         private static string _dbConnectionName = "AutoPortalConnection";
+        private static string _connectionString;
 
         public static void RegisterScopes(IServiceCollection services, IConfigurationRoot configuration)
         {
@@ -42,15 +48,23 @@ namespace AP.Server.Application
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IWorkshopService, WorkshopService>();
             services.AddScoped<IWorkshopBookingService, WorkshopBookingService>();
+            services.AddScoped<IWorkshopAccountService, WorkshopAccountService>();
             services.AddScoped<IEmailSender, AuthEmailSenderService>();
             services.AddScoped<ISmsSender, TwilioSmsSenderService>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
         {
+            services.AddScoped<IDbContextScopeFactory>(provider => 
+                new DbContextScopeFactory(
+                    new DbContextFactoryInjector(provider)));
+
+            services.AddSingleton<IAmbientDbContextLocator, AmbientDbContextLocator>();
+
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IWorkshopRepository, WorkshopRepository>();
             services.AddScoped<IWorkshopBookingRepository, WorkshopBookingRepository>();
+            services.AddScoped<IWorkshopAccountRepository, WorkshopAccountRepository>();
         }
 
         private static void RegisterDbContexts(IServiceCollection services, IConfigurationRoot config)

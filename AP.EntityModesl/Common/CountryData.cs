@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AP.EntityModel.Common
 {
-    public class Country
+    public class CountryData
     {
         public Guid ID { get; set; }
 

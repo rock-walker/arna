@@ -9,7 +9,6 @@ namespace AP.EntityModel.Mappers
         {
             return new CityViewModel
             {
-                GoogleCode = data.GoogleCode,
                 Name = data.Name,
                 Ru = data.Ru
             };

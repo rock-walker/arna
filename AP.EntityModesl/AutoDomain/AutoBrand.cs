@@ -12,6 +12,6 @@ namespace AP.EntityModel.AutoDomain
         public string Brand { get; set; }
         public Guid CountryID { get; set; }
 
-        public Country Country { get; set; }
+        public CountryData Country { get; set; }
     }
 }

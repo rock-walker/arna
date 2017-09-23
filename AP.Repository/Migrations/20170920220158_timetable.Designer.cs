@@ -9,9 +9,10 @@ using AP.Business.Model.Enums;
 namespace AP.Repository.Migrations
 {
     [DbContext(typeof(WorkshopContext))]
-    partial class WorkshopContextModelSnapshot : ModelSnapshot
+    [Migration("20170920220158_timetable")]
+    partial class timetable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.1.2")
@@ -114,32 +115,6 @@ namespace AP.Repository.Migrations
                     b.ToTable("Workshop");
                 });
 
-            modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopDayTimetable", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("Day");
-
-                    b.Property<TimeSpan?>("DinnerEnd");
-
-                    b.Property<TimeSpan?>("DinnerStart");
-
-                    b.Property<TimeSpan>("End");
-
-                    b.Property<bool>("IsHoliday");
-
-                    b.Property<TimeSpan>("Start");
-
-                    b.Property<Guid>("WorkshopID");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("WorkshopID");
-
-                    b.ToTable("WorkshopWeekTimetable");
-                });
-
             modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopIdentityUserDuplicate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -152,7 +127,7 @@ namespace AP.Repository.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("AP.EntityModel.Common.AddressData", b =>
+            modelBuilder.Entity("AP.EntityModel.Common.Address", b =>
                 {
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd();
@@ -282,6 +257,32 @@ namespace AP.Repository.Migrations
                     b.ToTable("Markers");
                 });
 
+            modelBuilder.Entity("AP.EntityModel.Common.WorkshopDayTimetable", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("Day");
+
+                    b.Property<TimeSpan?>("DinnerEnd");
+
+                    b.Property<TimeSpan?>("DinnerStart");
+
+                    b.Property<TimeSpan>("End");
+
+                    b.Property<bool>("IsHoliday");
+
+                    b.Property<TimeSpan>("Start");
+
+                    b.Property<Guid>("WorkshopID");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("WorkshopID");
+
+                    b.ToTable("WorkshopWeekTimetable");
+                });
+
             modelBuilder.Entity("AP.EntityModel.AutoDomain.AutoBrand", b =>
                 {
                     b.HasOne("AP.EntityModel.Common.CountryData", "Country")
@@ -318,7 +319,7 @@ namespace AP.Repository.Migrations
 
             modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopData", b =>
                 {
-                    b.HasOne("AP.EntityModel.Common.AddressData", "Address")
+                    b.HasOne("AP.EntityModel.Common.Address", "Address")
                         .WithMany()
                         .HasForeignKey("AddressID");
 
@@ -336,15 +337,7 @@ namespace AP.Repository.Migrations
                         .HasForeignKey("LogoID");
                 });
 
-            modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopDayTimetable", b =>
-                {
-                    b.HasOne("AP.EntityModel.AutoDomain.WorkshopData", "Workshop")
-                        .WithMany("WorkshopWeekTimetable")
-                        .HasForeignKey("WorkshopID")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("AP.EntityModel.Common.AddressData", b =>
+            modelBuilder.Entity("AP.EntityModel.Common.Address", b =>
                 {
                     b.HasOne("AP.EntityModel.Common.City", "City")
                         .WithMany()
@@ -356,6 +349,14 @@ namespace AP.Repository.Migrations
                     b.HasOne("AP.EntityModel.Common.CountryData", "Country")
                         .WithMany()
                         .HasForeignKey("CountryID");
+                });
+
+            modelBuilder.Entity("AP.EntityModel.Common.WorkshopDayTimetable", b =>
+                {
+                    b.HasOne("AP.EntityModel.AutoDomain.WorkshopData", "Workshop")
+                        .WithMany("WorkshopWeekTimetable")
+                        .HasForeignKey("WorkshopID")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
         }
     }

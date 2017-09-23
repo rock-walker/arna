@@ -5,7 +5,7 @@ namespace AP.EntityModel.Mappers
 {
     public static class AddressMapper
     {
-        public static AddressViewModel MapTo(this Address data)
+        public static AddressViewModel MapTo(this AddressData data)
         {
             return new AddressViewModel
             {

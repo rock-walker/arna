@@ -18,8 +18,8 @@
     },
     "AP.Server": {
       "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "api/workshop/all",
+      "launchBrowser": false,
+      "launchUrl": "api/workshop/getall",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

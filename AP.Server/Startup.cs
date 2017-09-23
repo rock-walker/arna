@@ -54,6 +54,7 @@ namespace AP.Server
                 );
 
                 DiContainer.RegisterScopes(services, Configuration);
+                AutomapperConfig.RegisterModels();
             }
             catch(Exception ex)
             {
