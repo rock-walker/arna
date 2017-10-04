@@ -6,8 +6,9 @@ using AP.Repository.Context;
 using AP.EntityModel.Common;
 using AP.EntityModel.Mappers;
 using AP.Business.Model.Common;
+using AP.Repository.Common.Contracts;
 
-namespace AP.Repository.Common
+namespace AP.Repository.Common.Services
 {
     public class CategoryRepository : ICategoryRepository
     {
@@ -29,7 +30,7 @@ namespace AP.Repository.Common
                     ;
                 }
 
-                var builtCategories = MenuBuilder.BuildCategoriesHierarchy(categories.OfType<Category>(), 0);
+                var builtCategories = MenuBuilder.BuildCategoriesHierarchy(categories.OfType<CategoryData>(), 0);
                 return builtCategories.Select(x => x.MapTo());
             });
 

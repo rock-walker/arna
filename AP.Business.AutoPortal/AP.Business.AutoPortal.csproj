@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AP.Business.Domain.Common\AP.Business.Domain.Common.csproj" />
     <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
     <ProjectReference Include="..\AP.ViewModel\AP.ViewModel.csproj" />

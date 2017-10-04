@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using AP.Repository.Context;
-using AP.Business.Model.Enums;
 
 namespace AP.Repository.Migrations
 {
@@ -52,14 +51,14 @@ namespace AP.Repository.Migrations
                     b.ToTable("WorkshopAutobrands");
                 });
 
-            modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopCategory", b =>
+            modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopCategoryData", b =>
                 {
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("CategoryID");
 
-                    b.Property<short>("MomentBookingState");
+                    b.Property<short?>("MomentBookingState");
 
                     b.Property<Guid>("WorkshopID");
 
@@ -167,6 +166,9 @@ namespace AP.Repository.Migrations
                     b.Property<string>("Comments")
                         .HasMaxLength(256);
 
+                    b.Property<string>("GooglePlaceId")
+                        .HasMaxLength(32);
+
                     b.Property<string>("Street")
                         .HasMaxLength(50);
 
@@ -183,7 +185,7 @@ namespace AP.Repository.Migrations
                     b.ToTable("Address");
                 });
 
-            modelBuilder.Entity("AP.EntityModel.Common.Category", b =>
+            modelBuilder.Entity("AP.EntityModel.Common.CategoryData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -199,7 +201,7 @@ namespace AP.Repository.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("AP.EntityModel.Common.City", b =>
+            modelBuilder.Entity("AP.EntityModel.Common.CityData", b =>
                 {
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd();
@@ -224,11 +226,14 @@ namespace AP.Repository.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Email");
+                    b.Property<string>("Email")
+                        .HasMaxLength(256);
 
-                    b.Property<string>("Mobile");
+                    b.Property<string>("Mobile")
+                        .HasMaxLength(128);
 
-                    b.Property<string>("Web");
+                    b.Property<string>("Web")
+                        .HasMaxLength(256);
 
                     b.HasKey("ID");
 
@@ -303,9 +308,9 @@ namespace AP.Repository.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopCategory", b =>
+            modelBuilder.Entity("AP.EntityModel.AutoDomain.WorkshopCategoryData", b =>
                 {
-                    b.HasOne("AP.EntityModel.Common.Category", "Category")
+                    b.HasOne("AP.EntityModel.Common.CategoryData", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryID")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -346,12 +351,12 @@ namespace AP.Repository.Migrations
 
             modelBuilder.Entity("AP.EntityModel.Common.AddressData", b =>
                 {
-                    b.HasOne("AP.EntityModel.Common.City", "City")
+                    b.HasOne("AP.EntityModel.Common.CityData", "City")
                         .WithMany()
                         .HasForeignKey("CityID");
                 });
 
-            modelBuilder.Entity("AP.EntityModel.Common.City", b =>
+            modelBuilder.Entity("AP.EntityModel.Common.CityData", b =>
                 {
                     b.HasOne("AP.EntityModel.Common.CountryData", "Country")
                         .WithMany()

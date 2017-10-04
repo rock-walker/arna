@@ -1,11 +1,12 @@
 ﻿using AP.EntityModel.AutoDomain;
+using System;
 using System.Threading.Tasks;
 
 namespace AP.Repository.Workshop.Contracts
 {
     public interface IWorkshopAccountRepository
     {
-        Task Add(WorkshopData account);
-        Task Update(WorkshopData account);
+        Task<Guid> Add(WorkshopData account);
+        void Update(WorkshopData account);
     }
 }

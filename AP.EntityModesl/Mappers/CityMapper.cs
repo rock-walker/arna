@@ -5,7 +5,7 @@ namespace AP.EntityModel.Mappers
 {
     public static class CityMapper
     {
-        public static CityViewModel MapTo(this City data)
+        public static CityViewModel MapTo(this CityData data)
         {
             return new CityViewModel
             {

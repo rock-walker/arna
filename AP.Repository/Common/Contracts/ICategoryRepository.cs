@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using AP.ViewModel.Common;
 using AP.Business.Model.Common;
 
-namespace AP.Repository.Common
+namespace AP.Repository.Common.Contracts
 {
     //TODO: DataContract is temp solution; add repository Dto
     public interface ICategoryRepository

@@ -35,7 +35,7 @@ namespace AP.Business.AutoDomain.Workshop.Services
                 (key, elements) => new BookingMomentViewModel
                 {
                     BookingMoments = elements,
-                    Workshop = workshopsData.Single(x => x.Id == key)
+                    Workshop = workshopsData.Single(x => x.ID == key)
                 });
 
             return workshopBookings;

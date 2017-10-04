@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="6.1.1" />
+    <PackageReference Include="EntityFramework.DbContextScope" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
+    <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
+  </ItemGroup>
+
+</Project>

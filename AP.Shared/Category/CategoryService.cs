@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AP.ViewModel.Common;
-using AP.Repository.Common;
 using System.Linq;
 using AP.ViewModel.Mapper;
+using AP.Repository.Common.Contracts;
 
 namespace AP.Shared.Category
 {

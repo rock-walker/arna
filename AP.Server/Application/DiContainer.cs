@@ -1,5 +1,4 @@
 ﻿using System;
-using AP.Repository.Common;
 using AP.Repository.Context;
 using AP.Shared.Category;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,13 +18,15 @@ using AP.Business.AutoPortal.Workshop.Services;
 using EntityFramework.DbContextScope.Interfaces;
 using EntityFramework.DbContextScope;
 using AP.Repository.Infrastructure;
+using AP.Repository.Common.Contracts;
+using AP.Repository.Common.Services;
+using AP.Business.Domain.Common;
 
 namespace AP.Server.Application
 {
     public class DiContainer
     {
         private static string _dbConnectionName = "AutoPortalConnection";
-        private static string _connectionString;
 
         public static void RegisterScopes(IServiceCollection services, IConfigurationRoot configuration)
         {
@@ -46,11 +47,14 @@ namespace AP.Server.Application
         private static void RegisterControllers(IServiceCollection services)
         {
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IWorkshopService, WorkshopService>();
             services.AddScoped<IWorkshopBookingService, WorkshopBookingService>();
             services.AddScoped<IWorkshopAccountService, WorkshopAccountService>();
+            services.AddScoped<IWorkshopFilterService, WorkshopFilterService>();
             services.AddScoped<IEmailSender, AuthEmailSenderService>();
             services.AddScoped<ISmsSender, TwilioSmsSenderService>();
+            services.AddScoped<IAutobrandService, AutobrandService>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
@@ -59,12 +63,15 @@ namespace AP.Server.Application
                 new DbContextScopeFactory(
                     new DbContextFactoryInjector(provider)));
 
-            services.AddSingleton<IAmbientDbContextLocator, AmbientDbContextLocator>();
+            services.AddScoped<IAmbientDbContextLocator, AmbientDbContextLocator>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IAddressRepository, AddressRepository>();
             services.AddScoped<IWorkshopRepository, WorkshopRepository>();
             services.AddScoped<IWorkshopBookingRepository, WorkshopBookingRepository>();
             services.AddScoped<IWorkshopAccountRepository, WorkshopAccountRepository>();
+            services.AddScoped<IWorkshopFilterRepository, WorkshopFilterRepository>();
+            services.AddScoped<IAutobrandRepository, AutobrandRepository>();
         }
 
         private static void RegisterDbContexts(IServiceCollection services, IConfigurationRoot config)

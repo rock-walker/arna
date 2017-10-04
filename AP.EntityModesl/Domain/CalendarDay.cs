@@ -17,6 +17,6 @@ namespace AP.EntityModel.Domain
 		public DateTime UtcDate { get; set; }
 
 		public virtual ICollection<Reservation> Reservations { get; set; }
-		public virtual Category Category { get; set; }
+		public virtual CategoryData Category { get; set; }
 	}
 }

@@ -21,7 +21,9 @@ namespace AP.EntityModel.Common
         public string SubApt { get; set; }
         [StringLength(256)]
         public string Comments { get; set; }
+        [StringLength(32)]
+        public string GooglePlaceId { get; set; }
 
-        public virtual City City { get; set; }
+        public virtual CityData City { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using AP.EntityModel.AutoDomain;
-using AP.ViewModel.Workshop;
-using AutoMapper;
+﻿using AutoMapper;
 
 namespace AP.Server.Application
 {
@@ -8,7 +6,7 @@ namespace AP.Server.Application
     {
         public static void RegisterModels()
         {
-            Mapper.Initialize(cfg => cfg.CreateMap<WorkshopAccountViewModel, WorkshopData>());
+            Mapper.Initialize(cfg => cfg.AddProfiles(new[] { "AP.Server" }));
         }
     }
 }

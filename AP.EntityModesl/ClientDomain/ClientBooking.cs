@@ -14,7 +14,7 @@ namespace AP.EntityModel.AutoDomain
         public long OrderTime { get; set; }
         public long ArrivalTime { get; set; }
 
-        public ICollection<Category> Categories { get; set; }
+        public ICollection<CategoryData> Categories { get; set; }
         public string Description { get; set; }
 
         public BookingStatus BookingStatus { get; set; }

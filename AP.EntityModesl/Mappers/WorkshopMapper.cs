@@ -9,10 +9,10 @@ namespace AP.EntityModel.Mappers
         {
             return new WorkshopViewModel
             {
-                Id = data.ID,
+                ID = data.ID,
                 Name = data.Name,
-                Categories = data.WorkshopCategories.Select(x => x.Category.MapTo()),
-                Contacts = data.Contact.MapTo(),
+                WorkshopCategories = data.WorkshopCategories.Select(x => x.Category.MapFrom()).ToList(),
+                Contact = data.Contact.MapTo(),
                 Address = data.Address.MapTo(),
                 Location = data.Location.MapTo()
             };

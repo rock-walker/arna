@@ -3,6 +3,7 @@
     public enum WorkshopAccountResult
     {
         WorkshopCreated,
+        WorkshopUpdated,
         WorkshopError = 10
     }
 }

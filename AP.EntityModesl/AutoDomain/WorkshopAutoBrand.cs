@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AP.EntityModel.AutoDomain
 {
@@ -11,6 +9,6 @@ namespace AP.EntityModel.AutoDomain
         public int AutoBrandID { get; set; }
 
         public WorkshopData Workshop { get; set; }
-        public AutoBrand AutoBrand { get; set; }
+        public AutoBrandData AutoBrand { get; set; }
     }
 }

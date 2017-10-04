@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using AP.ViewModel.Workshop;
@@ -14,11 +12,14 @@ namespace AP.Server.Controllers
     public class WorkshopAccountController : Controller
     {
         private readonly IWorkshopAccountService _workshopAccountService;
+        private readonly IWorkshopFilterService _filterService;
 
 
-        public WorkshopAccountController(IWorkshopAccountService workshopAccountService)
+        public WorkshopAccountController(IWorkshopAccountService workshopAccountService,
+                                         IWorkshopFilterService filterService)
         {
             _workshopAccountService = workshopAccountService;
+            _filterService = filterService;
         }
 
         [HttpGet]
@@ -40,25 +41,26 @@ namespace AP.Server.Controllers
                 await Task.FromException(new ArgumentException("Invalid workshop name"));
             }
 
-            return await _workshopAccountService.FindByName(name);
+            return await _filterService.FindByName(name);
         }
 
         [HttpPost]
-        public async Task<WorkshopAccountResult> Add([FromBody]WorkshopAccountViewModel workshop)
+        public async Task<string> Add([FromBody]WorkshopAccountViewModel workshop)
         {
             if (ModelState.IsValid)
             {
-                await _workshopAccountService.Add(workshop);
-                return WorkshopAccountResult.WorkshopCreated;
+                var workshopId = await _workshopAccountService.Add(workshop);
+                return workshopId.ToString();
             }
 
-            return WorkshopAccountResult.WorkshopError;
+            return WorkshopAccountResult.WorkshopError.ToString();
         }
 
-        [Produces("application/json")]
-        public async Task Edit()
+        [HttpPost]
+        public async Task<WorkshopAccountResult> Edit([FromBody]WorkshopAccountViewModel workshop)
         {
-
-        }
+            await _workshopAccountService.Update(workshop);
+            return WorkshopAccountResult.WorkshopUpdated;
+         }
     }
 }

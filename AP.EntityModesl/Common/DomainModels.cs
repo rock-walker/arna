@@ -19,7 +19,7 @@ namespace AP.EntityModel.Common
 			[StringLength(40)]
 			public string Middle { get; set; }
 			public virtual AvatarImage Ava { get; set; }
-			public virtual Category Category { get; set; }
+			public virtual CategoryData Category { get; set; }
 		}
 
 		public class AvatarImage

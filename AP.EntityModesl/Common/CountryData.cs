@@ -15,6 +15,7 @@ namespace AP.EntityModel.Common
 
         [StringLength(2)]
         public string Shortname { get; set;}
+
         public int PhoneCode { get; set; }
     }
 }

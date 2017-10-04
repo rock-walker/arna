@@ -12,7 +12,7 @@ namespace AP.EntityModel.Domain
 		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int Id { get; set; }
 		public string Name { get; set; }
-		public virtual ICollection<Category> Categories { get; set; }
+		public virtual ICollection<CategoryData> Categories { get; set; }
 		public virtual GeoMarker Location { get; set; }
 		public virtual Details Details { get; set; }
 		public virtual ICollection<Stuff> Specialists { get; set; }

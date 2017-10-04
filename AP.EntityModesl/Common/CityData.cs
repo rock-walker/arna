@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AP.EntityModel.Common
 {
-    public class City
+    public class CityData
     {
         public Guid ID { get; set; }
 

@@ -34,14 +34,15 @@ namespace AP.Repository.Workshop.Services
             _ambientLocator = locator;
         }
 
-        public async Task Add(WorkshopData account)
+        public async Task<Guid> Add(WorkshopData account)
         {
             await DbContext.AddAsync(account);
+            return account.ID;
         }
 
-        public Task Update(WorkshopData account)
+        public void Update(WorkshopData account)
         {
-            throw new NotImplementedException();
+            DbContext.Update(account);
         }
     }
 }
