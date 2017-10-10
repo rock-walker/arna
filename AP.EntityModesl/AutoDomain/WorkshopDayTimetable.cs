@@ -3,7 +3,7 @@ using System;
 
 namespace AP.EntityModel.AutoDomain
 {
-    public class WorkshopDayTimetable
+    public class WorkshopDayTimetableData
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid ID { get; set; }

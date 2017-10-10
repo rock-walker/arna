@@ -21,7 +21,7 @@ namespace AP.Business.AutoDomain.Workshop.Services
 
         public async Task<IEnumerable<BookingMomentViewModel>> GeMomentBookings(IEnumerable<Guid> workshops)
         {
-            var workshopsData = await _workshopService.GetById(workshops);
+            var workshopsData = _workshopService.GetById(workshops);
             var bookings = await _repo.GetMomentBookings(workshops);
             
             //That works really slower, than upper variant and save us from async db context access

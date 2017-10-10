@@ -11,10 +11,6 @@ namespace AP.Server.Application
         public WorkshopProfile()
         {
             CreateMap<WorkshopViewModel, WorkshopData>().ReverseMap();
-
-            CreateMap<AddressViewModel, AddressData>().ReverseMap();
-            CreateMap<CityViewModel, CityData>().ReverseMap();
-            CreateMap<CountryViewModel, CountryData>().ReverseMap();
         }
     }
 }

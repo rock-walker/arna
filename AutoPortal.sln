@@ -21,9 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Business.Model", "AP.Bus
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Core.Model", "AP.Core.Model\AP.Core.Model.csproj", "{D95CCC7F-DC36-4F6E-BA36-477DF65EFABA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AP.Business.Domain.Common", "AP.Business.Domain.Common\AP.Business.Domain.Common.csproj", "{22B1F91D-083E-406F-BD85-878CB49CE564}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.Business.Domain.Common", "AP.Business.Domain.Common\AP.Business.Domain.Common.csproj", "{22B1F91D-083E-406F-BD85-878CB49CE564}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AP.UnitTest", "UnitTest\AP.UnitTest.csproj", "{4BCCE1C9-8B7E-4E1F-9EDC-BBBD062211F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AP.UnitTest", "UnitTest\AP.UnitTest.csproj", "{4BCCE1C9-8B7E-4E1F-9EDC-BBBD062211F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AP.Registration", "AP.Registration\AP.Registration.csproj", "{07EFE614-44FD-4C16-8E7B-553E31F76EC0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{4BCCE1C9-8B7E-4E1F-9EDC-BBBD062211F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BCCE1C9-8B7E-4E1F-9EDC-BBBD062211F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BCCE1C9-8B7E-4E1F-9EDC-BBBD062211F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07EFE614-44FD-4C16-8E7B-553E31F76EC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07EFE614-44FD-4C16-8E7B-553E31F76EC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07EFE614-44FD-4C16-8E7B-553E31F76EC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07EFE614-44FD-4C16-8E7B-553E31F76EC0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace AP.Application
 {
     //[Authorize(Roles = "Client, Master, Administrator, PowerUser, Moderator")]
+    [AllowAnonymous]
     [Route("api/[controller]/[action]")]
     public class WorkshopController : Controller
     {
@@ -20,22 +21,11 @@ namespace AP.Application
             _workshop = workshop;
         }
 
-        public async Task<IEnumerable<WorkshopViewModel>> GetByCity(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new Exception("City is empty");
-            }
-            return await _workshop.GetByCity(name);
-        }
-
-        [AllowAnonymous]
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()
         {
             return await _workshop.GetAll();
         }
 
-        [AllowAnonymous]
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAround(double latitude, double longitude, double distance)
         {
             if (distance < 0.1)
@@ -45,27 +35,11 @@ namespace AP.Application
             return await _workshop.GetByLocation(latitude, longitude,  distance);
         }
 
-        [Route("id")]
-        public async Task<IEnumerable<WorkshopViewModel>> GetById(
+        public IEnumerable<WorkshopViewModel> GetById(
             [ModelBinder(BinderType = typeof(CommaDelimitedArrayModelBinder))]
             IEnumerable<Guid> workshops)
         {
-            return await _workshop.GetById(workshops);
-        }
-
-        // POST api/<controller>
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/<controller>/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/<controller>/5
-        public void Delete(int id)
-        {
+            return _workshop.GetById(workshops);
         }
     }
 }

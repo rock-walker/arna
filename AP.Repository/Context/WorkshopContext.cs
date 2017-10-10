@@ -21,7 +21,7 @@ namespace AP.Repository.Context
         public DbSet<CityData> Cities { get; set; }
         public DbSet<CountryData> Countries { get; set; }
         public DbSet<WorkshopAutoBrand> WorkshopAutoBrands { get; set; }
-        public DbSet<WorkshopDayTimetable> WorkshopWeekTimetable { get; set; }
+        public DbSet<WorkshopDayTimetableData> WorkshopWeekTimetable { get; set; }
         /*
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -47,7 +47,7 @@ namespace AP.Repository.Context
             builder.Entity<CountryData>().ToTable("Countries");
             builder.Entity<WorkshopCategoryData>().ToTable("WorkshopCategories");
             builder.Entity<WorkshopAutoBrand>().ToTable("WorkshopAutobrands");
-            builder.Entity<WorkshopDayTimetable>().ToTable("WorkshopWeekTimetable");
+            builder.Entity<WorkshopDayTimetableData>().ToTable("WorkshopWeekTimetable");
         }
     }
 }

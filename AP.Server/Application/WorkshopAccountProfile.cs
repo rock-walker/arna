@@ -4,7 +4,7 @@ using AP.ViewModel.Common;
 using AP.ViewModel.Workshop;
 using AP.Core.GeoLocation;
 using AutoMapper;
-using AP.Business.Model.Common;
+using AP.ViewModel.Booking;
 
 namespace AP.Server.Application
 {
@@ -22,13 +22,13 @@ namespace AP.Server.Application
             CreateMap<AddressViewModel, AddressData>().ReverseMap();
             CreateMap<CityViewModel, CityData>().ReverseMap();
             CreateMap<CountryViewModel, CountryData>().ReverseMap();
-            CreateMap<DayTimetableModel, WorkshopDayTimetable>().ReverseMap();
             CreateMap<WorkshopCategoryViewModel, WorkshopCategoryData>().ReverseMap();
             CreateMap<AutobrandViewModel, WorkshopAutoBrand>()
                 .ForMember(src => src.AutoBrandID, opt => opt.MapFrom(src => src.ID))
                 .ForMember(src => src.ID, opt => opt.Ignore())
                 .ReverseMap();
             CreateMap<AutobrandViewModel, AutoBrandData>().ReverseMap();
+            CreateMap<DayTimetableViewModel, WorkshopDayTimetableData>().ReverseMap();
         }
     }
 }

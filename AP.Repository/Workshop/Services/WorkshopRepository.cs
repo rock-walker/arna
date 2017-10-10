@@ -8,17 +8,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AP.Core.GeoLocation;
+using AP.Repository.Base;
+using EntityFramework.DbContextScope.Interfaces;
+using AP.EntityModel.AutoDomain;
 
 namespace AP.Repository.Workshop.Services
 {
-    public class WorkshopRepository : IWorkshopRepository
+    public class WorkshopRepository : AmbientContext<WorkshopContext>, IWorkshopRepository
     {
         private readonly WorkshopContext _ctx;
         private object _lockObject = new object();
+        private readonly IAmbientDbContextLocator _ambientLocator;
 
-        public WorkshopRepository(WorkshopContext context)
+        public WorkshopRepository(IAmbientDbContextLocator locator) : base(locator)
         {
-            _ctx = context;
         }
 
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()
@@ -29,20 +32,17 @@ namespace AP.Repository.Workshop.Services
             });
         }
 
-        public async Task<IEnumerable<WorkshopViewModel>> GetById(IEnumerable<Guid> ids)
+        public IEnumerable<WorkshopData> GetById(IEnumerable<Guid> ids)
         {
-            return await Task.Run(() =>
+            var workshops = QueryFullWorkshop();
+            var selectedWorkshops = new List<WorkshopData>();
+            foreach (var id in ids)
             {
-                var workshops = QueryAllWorkshops();
-                var selectedWorkshops = new List<WorkshopViewModel>();
-                foreach (var id in ids)
-                {
-                    var w = workshops.Single(x => x.ID == id).MapTo();
-                    selectedWorkshops.Add(w);
-                }
+                var w = workshops.Single(x => x.ID == id);
+                selectedWorkshops.Add(w);
+            }
 
-                return selectedWorkshops;
-            });
+            return selectedWorkshops;
         }
 
         public async Task<IEnumerable<WorkshopShortViewModel>> GetClosestLocations(
@@ -73,23 +73,22 @@ namespace AP.Repository.Workshop.Services
             });
         }
 
-        private IQueryable<EntityModel.AutoDomain.WorkshopData> QueryAllWorkshops()
+        private IQueryable<WorkshopData> QueryFullWorkshop()
         {
-            lock (_lockObject)
-            {
-                return _ctx.Workshops
-                        .Include(x => x.WorkshopCategories)
-                            .ThenInclude(x => x.Category)
-                        .Include(x => x.Contact)
-                        .Include(x => x.Address)
-                            .ThenInclude(x => x.City)
-                        .Include(x => x.Location)
-                        .Include(x => x.Logo)
-                        .AsNoTracking();
-            }
+            return DbContext.Workshops
+                    .Include(x => x.WorkshopCategories)
+                        //.ThenInclude(x => x.Category)
+                    .Include(x => x.Contact)
+                    .Include(x => x.Address)
+                        .ThenInclude(x => x.City)
+                    .Include(x => x.Location)
+                    .Include(x => x.Logo)
+                    .Include(x => x.WorkshopAutobrands)
+                    .Include(x => x.WorkshopWeekTimetable)
+                    .AsNoTracking();
         }
 
-        private EntityModel.AutoDomain.WorkshopData QueryShortWorkshops(Func<EntityModel.AutoDomain.WorkshopData, bool> condition)
+        private WorkshopData QueryShortWorkshops(Func<WorkshopData, bool> condition)
         {
             lock (_lockObject)
             {
@@ -101,7 +100,7 @@ namespace AP.Repository.Workshop.Services
             }
         }
 
-        private IQueryable<EntityModel.AutoDomain.WorkshopData> QueryAllShortWorkshops()
+        private IQueryable<WorkshopData> QueryAllShortWorkshops()
         {
             lock (_lockObject)
             {

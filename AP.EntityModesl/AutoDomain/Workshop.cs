@@ -41,6 +41,6 @@ namespace AP.EntityModel.AutoDomain
         public AvatarImage Logo { get; set; }
         public ICollection<WorkshopCategoryData> WorkshopCategories { get; set; }
         public ICollection<WorkshopAutoBrand> WorkshopAutobrands { get; set; }
-        public ICollection<WorkshopDayTimetable> WorkshopWeekTimetable { get; set; }
+        public ICollection<WorkshopDayTimetableData> WorkshopWeekTimetable { get; set; }
     }
 }

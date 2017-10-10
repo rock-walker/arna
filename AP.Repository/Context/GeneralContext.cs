@@ -17,7 +17,7 @@ namespace AP.Repository.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<CategoryData>().ToTable("Categories");
-            builder.Entity<AutoBrandData>().ToTable("AutoBrand");
+            builder.Entity<AutoBrandData>().ToTable("AutoBrands");
         }
     }
 }
