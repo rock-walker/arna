@@ -12,6 +12,22 @@ using Microsoft.ApplicationInsights;
 using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using AP.Business.Registration;
+using AP.Business.Registration.Handlers;
+using AP.Registration.Handlers;
+using AP.Infrastructure.Sql.MessageLog;
+using AP.Business.Registrations.Handlers;
+using AP.Business.AutoPortal.Order;
+using AP.Infrastructure.Messaging.Handling;
+using AP.Infrastructure;
+using EntityFramework.DbContextScope.Interfaces;
+using AP.Infrastructure.Messaging;
+using Microsoft.Extensions.Caching.Memory;
+using AP.Infrastructure.Serialization;
+using AP.Infrastructure.Processes;
+using AP.Infrastructure.EventSourcing;
+using AP.Business.Registration.ReadModel;
+using AP.Infrastructure.BlobStorage;
 
 namespace AP.Server
 {
@@ -45,15 +61,23 @@ namespace AP.Server
             try
             {
                 services.AddMvc(config =>
-                    {
-                        var policy = new AuthorizationPolicyBuilder()
+                        {
+                            var policy = new AuthorizationPolicyBuilder()
                                             .RequireAuthenticatedUser()
                                             .Build();
-                        config.Filters.Add(new AuthorizeFilter(policy));
-                    }
-                );
+                            config.Filters.Add(new AuthorizeFilter(policy));
+                        }
+                    )
+                    .AddDataAnnotationsLocalization(options => {
+                        options.DataAnnotationLocalizerProvider = (type, factory) =>
+                            factory.Create(typeof(Shared.Resources.Annotations));
+                        });
+
+                services.AddMemoryCache();
+                services.AddRouting();
 
                 DiContainer.RegisterScopes(services, Configuration);
+
                 AutomapperConfig.RegisterModels();
             }
             catch(Exception ex)
@@ -96,9 +120,60 @@ namespace AP.Server
 
             app.UseMvc();
 
+            //AppRoute.BuildRoutes(app);
+
+            RegisterEventHandlers(app.ApplicationServices, loggerFactory);
+
+            RegisterCommandHandlers(app.ApplicationServices);
+
+            StartListen(app.ApplicationServices);
             StartupRoles.Create(app.ApplicationServices).Wait();
         }
 
+        private static void RegisterEventHandlers(IServiceProvider provider, ILoggerFactory loggerFactory)
+        {
+            var eventProcessor = provider.GetService<IEventHandlerRegistry>();
+            var ambientContext = provider.GetService<IAmbientDbContextLocator>();
+            var factory = provider.GetService<IDbContextScopeFactory>();
+            var draftLogger = provider.GetService<ILogger<DraftOrderViewModelGenerator>>();
+            var workshopLogger = provider.GetService<ILogger<WorkshopViewModelGenerator>>();
+            var orderLogger = provider.GetService<ILogger<OrderEventHandler>>();
+            var commandBus = provider.GetService<ICommandBus>();
+            var cache = provider.GetService<IMemoryCache>();
+            var serializer = provider.GetService<ITextSerializer>();
+            var messageLog = new SqlMessageLog(factory, ambientContext, serializer, provider.GetService<IMetadataProvider>());
+            var sqlProcessManagerContext = provider.GetService<Func<IProcessManagerDataContext<RegistrationProcessManager>>>();
+            var eventSourcedOrderRepo = provider.GetService<IEventSourcedRepository<Order>>();
+            var eventSourcedAnchors = provider.GetService<IEventSourcedRepository<AnchorAssignments>>();
+            var workshopDao = provider.GetService<IWorkshopDao>();
+            var blob = provider.GetService<IBlobStorage>();
 
+            eventProcessor.Register(new RegistrationProcessManagerRouter(sqlProcessManagerContext, loggerFactory));
+            eventProcessor.Register(new DraftOrderViewModelGenerator(factory, draftLogger, ambientContext));
+            eventProcessor.Register(new PricedOrderViewModelGenerator(factory, ambientContext, cache));
+            eventProcessor.Register(new WorkshopViewModelGenerator(factory, commandBus, ambientContext, workshopLogger));
+            eventProcessor.Register(new AnchorAssignmentsViewModelGenerator(workshopDao, blob, serializer));
+            eventProcessor.Register(new AnchorAssignmentsHandler(eventSourcedOrderRepo, eventSourcedAnchors));
+            eventProcessor.Register(new OrderEventHandler(factory, ambientContext, orderLogger));
+            eventProcessor.Register(new SqlMessageLogHandler(messageLog));
+        }
+
+        private static void RegisterCommandHandlers(IServiceProvider provider)
+        {
+            var commandHandlerRegistry = provider.GetService<ICommandHandlerRegistry>();
+
+            foreach (var commandHandler in provider.GetServices<ICommandHandler>())
+            {
+                commandHandlerRegistry.Register(commandHandler);
+            }
+        }
+
+        private static void StartListen(IServiceProvider provider)
+        {
+            var command = provider.GetService<Func<string, IProcessor>>()("CommandProcessor");
+            command.Start();
+            var events = provider.GetService<Func<string, IProcessor>>()("EventProcessor");
+            events.Start();
+        }
     }
 }

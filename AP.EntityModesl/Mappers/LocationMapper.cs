@@ -1,10 +1,9 @@
 ﻿using AP.Core.GeoLocation;
 using AP.EntityModel.Common;
-using AP.ViewModel.Common;
 
 namespace AP.EntityModel.Mappers
 {
-    public static class LocationMapper
+    /*public static class LocationMapper
     {
         public static LocationViewModel MapTo(this GeoMarker data)
         {
@@ -14,5 +13,5 @@ namespace AP.EntityModel.Mappers
                 Lng = GeoLocation.ConvertRadiansToDegrees(data.Lng)
             };
         }
-    }
+    }*/
 }

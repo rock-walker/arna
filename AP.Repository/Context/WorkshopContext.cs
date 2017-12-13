@@ -1,4 +1,5 @@
 ﻿using AP.EntityModel.AutoDomain;
+using AP.EntityModel.Booking;
 using AP.EntityModel.Common;
 using EntityFramework.DbContextScope.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace AP.Repository.Context
         public DbSet<CountryData> Countries { get; set; }
         public DbSet<WorkshopAutoBrand> WorkshopAutoBrands { get; set; }
         public DbSet<WorkshopDayTimetableData> WorkshopWeekTimetable { get; set; }
+        public DbSet<Order> Orders { get; set; }
         /*
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,7 +40,6 @@ namespace AP.Repository.Context
             builder.Entity<WorkshopIdentityUserDuplicate>().ToTable("Users");
 
             builder.Entity<WorkshopData>().ToTable("Workshop");
-            //builder.Entity<CategoryData>().ToTable("Categories");
             builder.Entity<ContactData>().ToTable("Contacts");
             builder.Entity<GeoMarker>().ToTable("Markers");
             builder.Entity<AddressData>().ToTable("Address");
@@ -48,6 +49,11 @@ namespace AP.Repository.Context
             builder.Entity<WorkshopCategoryData>().ToTable("WorkshopCategories");
             builder.Entity<WorkshopAutoBrand>().ToTable("WorkshopAutobrands");
             builder.Entity<WorkshopDayTimetableData>().ToTable("WorkshopWeekTimetable");
+            builder.Entity<AnchorType>().ToTable("AnchorTypes");
+            builder.Entity<Order>().ToTable("Orders");
+
+            builder.Entity<OrderAnchor>().ToTable("OrderAnchors");
+            builder.Entity<OrderAnchor>().HasKey(x => new { x.OrderID, x.Position });
         }
     }
 }

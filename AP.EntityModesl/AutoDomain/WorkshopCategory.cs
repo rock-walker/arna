@@ -1,5 +1,4 @@
 ﻿using AP.EntityModel.Common;
-using AP.Business.Model.Enums;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 

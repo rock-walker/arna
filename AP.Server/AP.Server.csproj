@@ -39,6 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AP.Business.AutoPortal\AP.Business.AutoPortal.csproj" />
     <ProjectReference Include="..\AP.Business.Domain.Common\AP.Business.Domain.Common.csproj" />
+    <ProjectReference Include="..\AP.Business.Registrations\AP.Business.Registrations.csproj" />
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
     <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />

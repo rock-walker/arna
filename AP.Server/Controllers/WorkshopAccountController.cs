@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using AP.ViewModel.Workshop;
 using AP.Business.AutoPortal.Workshop.Contracts;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace AP.Server.Controllers
 {
@@ -13,8 +14,7 @@ namespace AP.Server.Controllers
     {
         private readonly IWorkshopAccountService _workshopAccountService;
         private readonly IWorkshopFilterService _filterService;
-
-
+        
         public WorkshopAccountController(IWorkshopAccountService workshopAccountService,
                                          IWorkshopFilterService filterService)
         {
@@ -49,18 +49,68 @@ namespace AP.Server.Controllers
         {
             if (ModelState.IsValid)
             {
+                workshop.RegisterDate = DateTime.UtcNow;
                 var workshopId = await _workshopAccountService.Add(workshop);
+
                 return workshopId.ToString();
             }
 
             return WorkshopAccountResult.WorkshopError.ToString();
         }
 
-        [HttpPost]
-        public async Task<WorkshopAccountResult> Edit([FromBody]WorkshopAccountViewModel workshop)
+        [HttpPut]
+        public WorkshopAccountResult Edit([FromBody]WorkshopAccountViewModel workshop)
         {
-            await _workshopAccountService.Update(workshop);
-            return WorkshopAccountResult.WorkshopUpdated;
-         }
+            if (ModelState.IsValid)
+            {
+                _workshopAccountService.Update(workshop);
+                return WorkshopAccountResult.WorkshopUpdated;
+            }
+            return WorkshopAccountResult.WorkshopError;
+        }
+
+        public StatusCodeResult Publish(string id)
+        {
+            var workshopId = Guid.Parse(id);
+            try
+            {
+                _workshopAccountService.Publish(workshopId);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+
+        public StatusCodeResult Unpublish(string id)
+        {
+            var workshopId = Guid.Parse(id);
+            try
+            {
+                _workshopAccountService.Unpublish(workshopId);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<int> CreateAnchor(string id, [FromBody]AnchorTypeViewModel anchorView)
+        {
+            if (ModelState.IsValid)
+            {
+                var workshopId = Guid.Parse(id);
+                //TODO: verify here, does workshop exist or not
+
+                await _workshopAccountService.CreateAnchor(workshopId, anchorView);
+                return 1;
+            }
+            return (int)WorkshopAccountResult.WorkshopError;
+        }
     }
 }

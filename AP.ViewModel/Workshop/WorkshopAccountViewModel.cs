@@ -21,11 +21,18 @@ namespace AP.ViewModel.Workshop
 
         [RegularExpression("\\d{9}")]
         public int Unp { get; set; }
-
+        
         [StringLength(512)]
         public string Description { get; set; }
+        
+        [StringLength(256)]
+        public string Slug { get; set; }
 
-        public DayTimetableModel[] WorkshopWeekTimetable { get; set; }
+        [DataType(DataType.DateTime)]
+        public DateTime RegisterDate { get; set; }
+        public bool IsPublished { get; set; }
+
+        public IEnumerable<DayTimetableModel> WorkshopWeekTimetable { get; set; }
         public IEnumerable<WorkshopCategoryViewModel> WorkshopCategories { get; set; }
         public IEnumerable<AutobrandViewModel> WorkshopAutobrands { get; set; }
         public ContactViewModel Contact { get; set; }

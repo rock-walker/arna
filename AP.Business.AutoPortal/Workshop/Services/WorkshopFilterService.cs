@@ -5,27 +5,35 @@ using AP.ViewModel.Workshop;
 using System.Threading.Tasks;
 using AP.Repository.Workshop.Contracts;
 using AutoMapper;
+using EntityFramework.DbContextScope.Interfaces;
 
 namespace AP.Business.AutoPortal.Workshop.Services
 {
     public class WorkshopFilterService : IWorkshopFilterService
     {
         private readonly IWorkshopFilterRepository _filterRepository;
+        private readonly IDbContextScopeFactory scopeFactory;
 
-        public WorkshopFilterService(IWorkshopFilterRepository filterRepository)
+        public WorkshopFilterService(IWorkshopFilterRepository filterRepository, IDbContextScopeFactory factory)
         {
             _filterRepository = filterRepository;
+            this.scopeFactory = factory;
         }
 
-        public async Task<WorkshopViewModel> FindById(Guid id)
+        public WorkshopViewModel FindById(Guid id)
         {
-            var workshop = await _filterRepository.FindById(id);
-            if (workshop == null)
+            try
             {
-                throw new KeyNotFoundException(string.Format("Workshop with that Id {id} doesn't exist in DB", id));
+                using (var scope = scopeFactory.CreateReadOnly())
+                {
+                    var workshop = _filterRepository.FindById(id);
+                    return Mapper.Map<WorkshopViewModel>(workshop);
+                }
             }
-
-            return Mapper.Map<WorkshopViewModel>(workshop);
+            catch (Exception)
+            {
+                throw new KeyNotFoundException(string.Format("Workshop with Id {0} doesn't exist in DB", id));
+            }
         }
 
         public async Task<WorkshopShortViewModel> FindByName(string name)

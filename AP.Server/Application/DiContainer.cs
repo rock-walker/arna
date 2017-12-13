@@ -21,6 +21,20 @@ using AP.Repository.Infrastructure;
 using AP.Repository.Common.Contracts;
 using AP.Repository.Common.Services;
 using AP.Business.Domain.Common;
+using AP.EntityModel.ReadModel;
+using AP.Business.Registration.ReadModel;
+using AP.Business.Registration.ReadModel.Implementation;
+using AP.Infrastructure.Sql.EventSourcing;
+using AP.Infrastructure.EventSourcing;
+using Infrastructure.Sql.EventSourcing;
+using AP.Infrastructure.Sql.MessageLog;
+using AP.Business.Registration.Database;
+using AP.Infrastructure.Processes;
+using AP.Business.Registration;
+using AP.Infrastructure.Sql.Processes;
+using AP.Infrastructure.Messaging;
+using AP.Infrastructure.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace AP.Server.Application
 {
@@ -42,6 +56,9 @@ namespace AP.Server.Application
             RegisterDbContexts(services, configuration);
 
             RegisterAuthentication(services, configuration);
+
+            BookingContainer.SetupBookingHandlers(services);
+            BookingContainer.OnCreateContainer(services);
         }
 
         private static void RegisterControllers(IServiceCollection services)
@@ -49,26 +66,28 @@ namespace AP.Server.Application
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IWorkshopService, WorkshopService>();
-            services.AddScoped<IWorkshopBookingService, WorkshopBookingService>();
             services.AddScoped<IWorkshopAccountService, WorkshopAccountService>();
             services.AddScoped<IWorkshopFilterService, WorkshopFilterService>();
             services.AddScoped<IEmailSender, AuthEmailSenderService>();
             services.AddScoped<ISmsSender, TwilioSmsSenderService>();
             services.AddScoped<IAutobrandService, AutobrandService>();
+
+            services.AddScoped<IOrderDao, OrderDao>();
+            services.AddSingleton<IWorkshopDao, CachingWorkshopDao>();
+            services.AddScoped<IWorkshopDao, WorkshopDao>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
         {
-            services.AddScoped<IDbContextScopeFactory>(provider => 
+            services.AddTransient<IDbContextScopeFactory>(provider => 
                 new DbContextScopeFactory(
                     new DbContextFactoryInjector(provider)));
 
-            services.AddScoped<IAmbientDbContextLocator, AmbientDbContextLocator>();
+            services.AddSingleton<IAmbientDbContextLocator, AmbientDbContextLocator>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IAddressRepository, AddressRepository>();
             services.AddScoped<IWorkshopRepository, WorkshopRepository>();
-            services.AddScoped<IWorkshopBookingRepository, WorkshopBookingRepository>();
             services.AddScoped<IWorkshopAccountRepository, WorkshopAccountRepository>();
             services.AddScoped<IWorkshopFilterRepository, WorkshopFilterRepository>();
             services.AddScoped<IAutobrandRepository, AutobrandRepository>();
@@ -79,8 +98,18 @@ namespace AP.Server.Application
             var connectionString = config.GetConnectionString(_dbConnectionName);
 
             services.AddDbContext<GeneralContext>(options => options.UseSqlServer(connectionString));
+
+            //CQRS proposes to make WorkshopContext transient
             services.AddDbContext<WorkshopContext>(options => options.UseSqlServer(connectionString));
             services.AddDbContext<IdentityContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<WorkshopRegistrationDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+            services.AddDbContext<RegistrationProcessManagerDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+            services.AddTransient<Func<IProcessManagerDataContext<RegistrationProcessManager>>, Func<SqlProcessManagerDataContext<RegistrationProcessManager>>>(
+                provider => () => new SqlProcessManagerDataContext<RegistrationProcessManager>(() => provider.GetService<RegistrationProcessManagerDbContext>(), 
+                provider.GetService<ICommandBus>(), provider.GetService<ITextSerializer>(), provider.GetService<ILogger>()));
+            services.AddDbContext<EventStoreDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+            services.AddSingleton(typeof(IEventSourcedRepository<>), typeof(SqlEventSourcedRepository<>));
+            services.AddDbContext<MessageLogDbContext>(options => options.UseSqlServer(connectionString));
 
             services.AddIdentity<ApplicationUser, ApplicationRole>(configuration =>
                 {

@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
+    <ProjectReference Include="..\AP.ViewModel\AP.ViewModel.csproj" />
   </ItemGroup>
 
 </Project>

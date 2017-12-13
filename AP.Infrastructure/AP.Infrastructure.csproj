@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
+    <PackageReference Include="EntityFramework.DbContextScope" Version="1.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
 </Project>

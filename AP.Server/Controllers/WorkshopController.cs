@@ -6,24 +6,30 @@ using AP.ViewModel.Workshop;
 using AP.Business.AutoDomain.Workshop.Contracts;
 using AP.Server.Application;
 using Microsoft.AspNetCore.Authorization;
+using AP.Server;
+using AP.Business.Registration.ReadModel;
+using System.Linq;
+using EntityFramework.DbContextScope.Interfaces;
 
 namespace AP.Application
 {
     //[Authorize(Roles = "Client, Master, Administrator, PowerUser, Moderator")]
     [AllowAnonymous]
     [Route("api/[controller]/[action]")]
-    public class WorkshopController : Controller
+    public class WorkshopController : WorkshopTenantController
     {
-        private readonly IWorkshopService _workshop;
+        private readonly IWorkshopService workshop;
+        private readonly IDbContextScopeFactory factory;
 
-        public WorkshopController(IWorkshopService workshop)
+        public WorkshopController(IWorkshopService workshop, IWorkshopDao workshopDao, IDbContextScopeFactory factory) : base(workshopDao)
         {
-            _workshop = workshop;
+            this.workshop = workshop;
+            this.factory = factory;
         }
 
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()
         {
-            return await _workshop.GetAll();
+            return await workshop.GetAll();
         }
 
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAround(double latitude, double longitude, double distance)
@@ -32,14 +38,29 @@ namespace AP.Application
             {
                 await Task.FromException(new ArgumentException("distance very close"));
             }
-            return await _workshop.GetByLocation(latitude, longitude,  distance);
+            return await workshop.GetByLocation(latitude, longitude,  distance);
         }
 
-        public IEnumerable<WorkshopViewModel> GetById(
+        public IEnumerable<WorkshopViewModel> GetByCode(
             [ModelBinder(BinderType = typeof(CommaDelimitedArrayModelBinder))]
-            IEnumerable<Guid> workshops)
+            IEnumerable<string> workshops)
         {
-            return _workshop.GetById(workshops);
+            return workshop.GetBySlug(workshops);
+        }
+
+        [Route("/{workshopCode}/")]
+        public WorkshopViewModel GetByCode()
+        {
+            using (var scope = factory.CreateReadOnly())
+            {
+                var alias = WorkshopAlias;
+                if (alias != null)
+                {
+                    return workshop.GetBySlug(new[] { WorkshopCode }).FirstOrDefault();
+                }
+            }
+
+            return null;
         }
     }
 }

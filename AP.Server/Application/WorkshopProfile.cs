@@ -1,6 +1,4 @@
 ﻿using AP.EntityModel.AutoDomain;
-using AP.EntityModel.Common;
-using AP.ViewModel.Common;
 using AP.ViewModel.Workshop;
 using AutoMapper;
 

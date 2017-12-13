@@ -9,6 +9,13 @@ using AutoMapper;
 using AP.EntityModel.AutoDomain;
 using EntityFramework.DbContextScope.Interfaces;
 using AP.Business.Domain.Common;
+using AP.Infrastructure.Messaging;
+using AP.Business.Workshop.Contracts;
+using AP.EntityModel.Booking;
+using AP.Business.AutoPortal.Events;
+using System.Linq;
+using System.Collections.Generic;
+using AP.Infrastructure.Utils;
 
 namespace AP.Business.AutoPortal.Workshop.Services
 {
@@ -16,31 +23,36 @@ namespace AP.Business.AutoPortal.Workshop.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAddressService _addressService;
-        private readonly IWorkshopFilterService _filterService;
+        private readonly IWorkshopFilterRepository filterRepo;
         private readonly IWorkshopAccountRepository _workshopAccountRepository;
         private readonly IDbContextScopeFactory _dbContextScope;
+        private readonly IEventBus eventBus;
 
-        public WorkshopAccountService(UserManager<ApplicationUser> userManager, 
+        public WorkshopAccountService(UserManager<ApplicationUser> userManager,
             IWorkshopAccountRepository accountRepo,
             IDbContextScopeFactory scopeFactory,
             IAddressService addressService,
-            IWorkshopFilterService filterService)
+            IWorkshopFilterRepository filterRepo,
+            IEventBus eventBus)
         {
             _addressService = addressService;
-            _filterService = filterService;
+            this.filterRepo = filterRepo;
             _userManager = userManager;
             _workshopAccountRepository = accountRepo;
             _dbContextScope = scopeFactory;
+            this.eventBus = eventBus;
         }
 
         public async Task<Guid> Add(WorkshopAccountViewModel workshopViewModel)
         {
-            //ensure, that workshop doesn't exist at DB
-            var workshopData = Mapper.Map<WorkshopAccountViewModel, WorkshopData>(workshopViewModel);
+            var workshopData = Mapper.Map<WorkshopData>(workshopViewModel);
 
             var workshopId = Guid.Empty;
+            AnchorType anchor;
             using (var dbContext = _dbContextScope.Create())
             {
+                //check if the same instance is already exist: verify by NAME
+
                 var cityId = _addressService.GetCityByName(workshopData.Address.City.Ru);
                 if (cityId == null)
                 {
@@ -48,65 +60,232 @@ namespace AP.Business.AutoPortal.Workshop.Services
                 }
 
                 workshopData.Address.CityID = cityId;
+                if (workshopData.IsPublished)
+                {
+                    workshopData.IsPublished = false;
+                }
+
+                anchor = new AnchorType
+                {
+                    Quantity = workshopData.AnchorNumber,
+                    Price = workshopData.PayHour,
+                    Name = "Hoist",
+                    Description = "For cars",
+                };
+
+                workshopData.Anchors.Add(anchor);
+                workshopData.Slug = HandleGenerator.Generate(12);
+                workshopData.AccessCode = HandleGenerator.Generate(6);
 
                 workshopId = await _workshopAccountRepository.Add(workshopData);
-                await dbContext.SaveChangesAsync();
+
+                dbContext.SaveChanges();
+            }
+
+            PublishWorkshopEvent<WorkshopCreated>(workshopData);
+            if (anchor != null)
+            {
+                PublishAnchorCreated(workshopId, anchor);
             }
 
             return workshopId;
         }
 
-        public async Task Update(WorkshopAccountViewModel workshopViewModel)
+        public async Task CreateAnchor(Guid workshopId, AnchorTypeViewModel anchorView)
         {
-            var workshopData = Mapper.Map<WorkshopAccountViewModel, WorkshopData>(workshopViewModel);
+            var anchorTypeData = Mapper.Map<AnchorType>(anchorView);
 
+            using (var factory = _dbContextScope.Create())
+            {
+                //anchorTypeData.WorkshopID = workshopId;
+                await _workshopAccountRepository.CreateAnchor(anchorTypeData);
+            }
+            var workshop = filterRepo.FindById(workshopId);
+            if (workshop.WasEverPublished)
+            {
+                PublishAnchorCreated(workshopId, anchorTypeData);
+            }
+        }
+
+        public void Update(WorkshopAccountViewModel workshopViewModel)
+        {
+            var wsUpdated = Mapper.Map<WorkshopData>(workshopViewModel);
+            AnchorType hoists = null;
             using (var dbContext = _dbContextScope.Create())
             {
-                var workshopDb = await _filterService.FindById(workshopData.ID);
-                if (workshopDb == null)
+                var wsCurrent = filterRepo.FindById(wsUpdated.ID);
+                if (wsCurrent == null)
                 {
-                    throw new ArgumentException(string.Format("Provided ID {0} doesn't exist in DB", workshopData.ID));
+                    throw new ArgumentException(string.Format("Provided ID {0} doesn't exist in DB", wsUpdated.ID));
                 }
 
-                if (workshopDb.Address != null && workshopDb.Address.City.Ru != workshopData.Address.City.Ru)
+                _workshopAccountRepository.LoadAnchors(wsCurrent);
+                //TODO: temp decision with Address until Google PathID will be integrated
+                _workshopAccountRepository.LoadAddress(wsCurrent);
+
+                if (wsCurrent.Address != null && wsCurrent.Address.City.Ru != wsUpdated.Address.City.Ru)
                 {
                     //verify if new city exists in DB
-                    var cityId = _addressService.GetCityByName(workshopData.Address.City.Ru);
+                    var cityId = _addressService.GetCityByName(wsUpdated.Address.City.Ru);
                     if (cityId == null)
                     {
-                        throw new ArgumentException(string.Format("the city {0} hasn't been added to database", workshopData.Address.City.Ru));
+                        throw new ArgumentException(string.Format("the city {0} hasn't been added to database", wsUpdated.Address.City.Ru));
                     }
 
-                    workshopData.Address.CityID = cityId;
+                    wsUpdated.Address.CityID = cityId;
                 }
 
-                var categories = workshopData.WorkshopCategories;
+                var categories = wsUpdated.WorkshopCategories;
                 if (categories != null)
                 {
-                    foreach(var c in categories)
+                    foreach (var c in categories)
                     {
-                        c.WorkshopID = workshopData.ID;
+                        c.WorkshopID = wsUpdated.ID;
                     }
                 }
 
-                var autobrands = workshopData.WorkshopAutobrands;
+                var autobrands = wsUpdated.WorkshopAutobrands;
                 if (autobrands != null)
                 {
-                    foreach(var w in autobrands)
+                    foreach (var w in autobrands)
                     {
-                        w.WorkshopID = workshopData.ID;
+                        w.WorkshopID = wsUpdated.ID;
                     }
                 }
 
-                _workshopAccountRepository.Update(workshopData);
-                await dbContext.SaveChangesAsync();
+                if (wsCurrent.AnchorNumber != wsUpdated.AnchorNumber ||
+                    wsCurrent.PayHour != wsUpdated.PayHour)
+                {
+                    //TODO: means that we have only Hoist anchors
+                    hoists = wsCurrent.Anchors.FirstOrDefault();
+                    if (hoists != null)
+                    {
+                        hoists.Quantity = wsUpdated.AnchorNumber;
+                        hoists.Price = wsUpdated.PayHour;
+                    }
+                }
+
+                if (wsUpdated.RegisterDate == null ||
+                    wsUpdated.RegisterDate == DateTime.MinValue)
+                {
+                    wsUpdated.RegisterDate = wsCurrent.RegisterDate;
+                }
+
+                wsUpdated.WasEverPublished = wsCurrent.WasEverPublished;
+
+                _workshopAccountRepository.Update(wsUpdated, wsCurrent);
+                dbContext.SaveChanges();
             }
+
+            PublishWorkshopEvent<WorkshopUpdated>(wsUpdated);
+            if (wsUpdated.WasEverPublished && hoists != null)
+            {
+                PublishAnchorUpdated(wsUpdated.ID, hoists);
+            }
+        }
+
+        public void Publish(Guid workshopId)
+        {
+            UpdatePublished(workshopId, true);
+        }
+
+        public void Unpublish(Guid workshopId)
+        {
+            UpdatePublished(workshopId, false);
         }
 
         public async Task<string> GetAccountPhone(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             return user.PhoneNumber;
+        }
+
+        private void UpdatePublished(Guid workshopId, bool isPublished)
+        {
+            using (var context = _dbContextScope.Create())
+            {
+                var workshop = filterRepo.FindById(workshopId);
+                if (workshop == null)
+                {
+                    throw new KeyNotFoundException(string.Format("workshop Id {0} doesn't exist", workshopId));
+                }
+                workshop.IsPublished = isPublished;
+                if (isPublished && !workshop.WasEverPublished)
+                {
+                    // This flags prevents any further seat type deletions.
+                    workshop.WasEverPublished = true;
+                    context.SaveChanges();
+
+                    // We always publish events *after* saving to store.
+                    // Publish all anchors that were created before.
+                    _workshopAccountRepository.LoadAnchors(workshop);
+                    foreach (var seat in workshop.Anchors)
+                    {
+                        PublishAnchorCreated(workshop.ID, seat);
+                    }
+                }
+                else
+                {
+                    context.SaveChanges();
+                }
+
+                if (isPublished)
+                {
+                    eventBus.Publish(new WorkshopPublished { SourceId = workshop.ID });
+                }
+                else
+                {
+                    eventBus.Publish(new WorkshopUnpublished { SourceId = workshop.ID });
+                }
+            }
+        }
+
+        private void PublishWorkshopEvent<T>(WorkshopData workshop)
+            where T : WorkshopEvent, new()
+        {
+            eventBus.Publish(new T()
+            {
+                SourceId = workshop.ID,
+                Owner = new Owner
+                {
+                    //use this values from Identity
+                    Phone = "101",//workshop.OwnerName,
+                    Email = "test@gmail.com"//workshop.OwnerEmail,
+                },
+                Name = workshop.Name,
+                Description = workshop.Description,
+                Location = workshop.Location.ToString(),
+                Slug = workshop.Slug,
+                RegisterDate = workshop.RegisterDate
+            });
+        }
+
+        //TODO: 2 events AnchorUpdated and AnchorCreated are really identical;
+        // the logic could be joined.
+        private void PublishAnchorCreated(Guid workshopId, AnchorType anchor)
+        {
+            eventBus.Publish(new AnchorCreated
+            {
+                WorkshopId = workshopId,
+                SourceId = anchor.ID,
+                Name = anchor.Name,
+                Description = anchor.Description,
+                Price = anchor.Price,
+                Quantity = anchor.Quantity,
+            });
+        }
+
+        private void PublishAnchorUpdated(Guid workshopId, AnchorType anchor)
+        {
+            eventBus.Publish(new AnchorUpdated
+            {
+                WorkshopID = workshopId,
+                SourceId = anchor.ID,
+                Name = anchor.Name,
+                Description = anchor.Description,
+                Price = anchor.Price,
+                Quantity = anchor.Quantity,
+            });
         }
     }
 }

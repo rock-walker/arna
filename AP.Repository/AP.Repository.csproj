@@ -21,6 +21,7 @@
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
     <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
     <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
+    <ProjectReference Include="..\AP.Infrastructure.Sql\AP.Infrastructure.Sql.csproj" />
   </ItemGroup>
 
 </Project>
