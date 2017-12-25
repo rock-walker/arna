@@ -28,6 +28,7 @@ using AP.Infrastructure.Processes;
 using AP.Infrastructure.EventSourcing;
 using AP.Business.Registration.ReadModel;
 using AP.Infrastructure.BlobStorage;
+using AP.Repository.Booking.Contracts;
 
 namespace AP.Server
 {
@@ -147,6 +148,7 @@ namespace AP.Server
             var eventSourcedAnchors = provider.GetService<IEventSourcedRepository<AnchorAssignments>>();
             var workshopDao = provider.GetService<IWorkshopDao>();
             var blob = provider.GetService<IBlobStorage>();
+            var orderRepository = provider.GetService<IOrderRepository>();
 
             eventProcessor.Register(new RegistrationProcessManagerRouter(sqlProcessManagerContext, loggerFactory));
             eventProcessor.Register(new DraftOrderViewModelGenerator(factory, draftLogger, ambientContext));
@@ -154,7 +156,7 @@ namespace AP.Server
             eventProcessor.Register(new WorkshopViewModelGenerator(factory, commandBus, ambientContext, workshopLogger));
             eventProcessor.Register(new AnchorAssignmentsViewModelGenerator(workshopDao, blob, serializer));
             eventProcessor.Register(new AnchorAssignmentsHandler(eventSourcedOrderRepo, eventSourcedAnchors));
-            eventProcessor.Register(new OrderEventHandler(factory, ambientContext, orderLogger));
+            eventProcessor.Register(new OrderEventHandler(factory, orderRepository, orderLogger));
             eventProcessor.Register(new SqlMessageLogHandler(messageLog));
         }
 

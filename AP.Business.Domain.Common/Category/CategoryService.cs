@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using AP.ViewModel.Common;
 using System.Linq;
 using AP.ViewModel.Mapper;
@@ -16,16 +15,20 @@ namespace AP.Business.Domain.Common.Category
             _categories = categoryRepo;
         }
 
-        public async Task<IEnumerable<MenuViewModel>> GetHierarchical()
+        public IEnumerable<CategoryViewModel> Get(IEnumerable<int> ids)
         {
-            var fullMenu = await _categories.GetHierarchical();
-            return fullMenu.Select(x => x.MapTo());
-
+            return _categories.Get(ids).Select(x => x.MapTo());
         }
 
-        public async Task<IEnumerable<MenuViewModel>> GetTopLevel()
+        public IEnumerable<CategoryViewModel> GetHierarchical()
         {
-            var topLevelMenu = await _categories.GetTopLevel();
+            var fullMenu = _categories.GetHierarchical();
+            return fullMenu.Select(x => x.MapTo());
+        }
+
+        public IEnumerable<CategoryViewModel> GetTopLevel()
+        {
+            var topLevelMenu = _categories.GetTopLevel();
             return topLevelMenu.Select(x => x.MapTo());
         }
     }

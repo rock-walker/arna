@@ -67,11 +67,11 @@ namespace AP.Business.Registration.ReadModel.Implementation
             _logger = logger;
         }
 
-        public Guid? LocateOrder(string email, string accessCode)
+        public Guid? LocateOrder(Guid attendee, string accessCode)
         {
             var orderProjection = DbContext
                 .Query<DraftOrder>()
-                .Where(o => o.RegistrantEmail == email && o.AccessCode == accessCode)
+                .Where(o => o.AttendeeID == attendee && o.AccessCode == accessCode)
                 .Select(o => new { o.OrderID })
                 .FirstOrDefault();
 

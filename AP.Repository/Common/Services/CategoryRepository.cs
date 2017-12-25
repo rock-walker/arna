@@ -1,53 +1,54 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AP.Repository.Infrastructure;
 using AP.Repository.Context;
 using AP.EntityModel.Common;
 using AP.EntityModel.Mappers;
 using AP.Business.Model.Common;
 using AP.Repository.Common.Contracts;
+using AP.Core.Database;
+using EntityFramework.DbContextScope.Interfaces;
 
 namespace AP.Repository.Common.Services
 {
-    public class CategoryRepository : ICategoryRepository
+    public class CategoryRepository : AmbientContext<GeneralContext>, ICategoryRepository
     {
-        private readonly GeneralContext _ctx;
-
-        public CategoryRepository(GeneralContext context)
+        public CategoryRepository(GeneralContext context, IAmbientDbContextLocator locator) : base(locator)
         {
-            _ctx = context;
         }
 
-        public async Task<IEnumerable<CategoryModel>> GetHierarchical()
+        public IEnumerable<CategoryModel> Get(IEnumerable<int> ids)
         {
-            var menu = await Task.Run(() =>
+            var dbCategories = DbContext.Categories;
+            var categories = new List<CategoryModel>();
+            foreach(var id in ids)
             {
-                var categories = _ctx.Categories.ToList();
-                if (!categories.Any())
+                var category = dbCategories.FirstOrDefault(x => x.Id == id);
+                if (category != null)
                 {
-                    //throw Exception here
-                    ;
+                    categories.Add(category.MapTo());
                 }
+            }
 
-                var builtCategories = MenuBuilder.BuildCategoriesHierarchy(categories.OfType<CategoryData>(), 0);
-                return builtCategories.Select(x => x.MapTo());
-            });
-
-            return menu;
+            return categories;
         }
 
-        public async Task<IEnumerable<CategoryModel>> GetTopLevel()
+        public IEnumerable<CategoryModel> GetHierarchical()
         {
-            var result = await Task.Run(() =>
+            var categories = DbContext.Categories.ToList();
+            if (!categories.Any())
             {
-                var categories = _ctx.Categories.ToList();
-                return categories.Select(x => x.MapTo());
-            });
+                //throw Exception here
+                ;
+            }
 
-            return result;
+            var builtCategories = MenuBuilder.BuildCategoriesHierarchy(categories.OfType<CategoryData>(), 0);
+            return builtCategories.Select(x => x.MapTo());
         }
 
-        
+        public IEnumerable<CategoryModel> GetTopLevel()
+        {
+            return DbContext.Categories.Select(x => x.MapTo());
+        }
     }
 }

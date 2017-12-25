@@ -4,9 +4,9 @@ using AP.ViewModel.Common;
 using AP.ViewModel.Workshop;
 using AP.Core.GeoLocation;
 using AutoMapper;
-using AP.Business.Model.Common;
+using AP.ViewModel.Booking;
 
-namespace AP.Server.Application
+namespace AP.Server.ViewMapping
 {
     public class WorkshopAccountProfile : Profile
     {
@@ -28,7 +28,7 @@ namespace AP.Server.Application
                 .ForMember(src => src.ID, opt => opt.Ignore())
                 .ReverseMap();
             CreateMap<AutobrandViewModel, AutoBrandData>().ReverseMap();
-            CreateMap<DayTimetableModel, WorkshopDayTimetableData>().ReverseMap();
+            CreateMap<DayTimetableViewModel, WorkshopDayTimetableData>().ReverseMap();
         }
     }
 }

@@ -19,7 +19,7 @@ namespace AP.EntityModel.ReadModel
     {
         DraftOrder FindDraftOrder(Guid orderId);
 
-        Guid? LocateOrder(string email, string accessCode);
+        Guid? LocateOrder(Guid attendee, string accessCode);
 
         PricedOrder FindPricedOrder(Guid orderId);
 

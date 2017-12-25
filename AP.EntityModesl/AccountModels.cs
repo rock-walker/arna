@@ -41,7 +41,7 @@ namespace EL.EntityModel
     {
         [Key]
         [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
-        public int Id   {get; set;}
+        public int Id {get; set;}
         public int UserId { get; set; }
         public int RoleId { get; set; }
     }

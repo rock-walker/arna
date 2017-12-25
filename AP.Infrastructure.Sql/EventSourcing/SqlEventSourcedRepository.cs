@@ -76,7 +76,6 @@ namespace Infrastructure.Sql.EventSourcing
                     return entityFactory.Invoke(id, deserialized);
                 }
 
-                context.SaveChanges();
                 return null;
             }
         }

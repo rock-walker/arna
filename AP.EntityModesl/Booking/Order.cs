@@ -17,9 +17,12 @@
         public Order(Guid workshopId, Guid orderId, string accessCode)
             : this()
         {
-            this.Id = orderId;
-            this.WorkshopId = workshopId;
-            this.AccessCode = accessCode;
+            Id = orderId;
+            WorkshopId = workshopId;
+            AccessCode = accessCode;
+            CategoryIds = "";
+            AttendeeID = Guid.Empty;
+            AutoID = Guid.Empty;
         }
 
         protected Order()
@@ -38,12 +41,15 @@
 
         [Display(Name = "Order Code")]
         public string AccessCode { get; set; }
-        [Display(Name = "Registrant Name")]
-        public string RegistrantName { get; set; }
-        [Display(Name = "Registrant Email")]
-        public string RegistrantEmail { get; set; }
+
         [Display(Name = "Total Amount")]
         public decimal TotalAmount { get; set; }
+
+        public string CategoryIds { get; set; }
+        public Guid AutoID { get; set; }
+        public Guid AttendeeID { get; set; }
+        public string Description { get; set; }
+        public DateTime? BookingTime { get; set; }
 
         /// <summary>
         /// This pattern is typical for EF 4 since it does 

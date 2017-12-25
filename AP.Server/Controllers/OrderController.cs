@@ -120,9 +120,10 @@ namespace AP.Server.Controllers
         }
 
         [HttpPost]
-        public ActionResult Find(string email, string accessCode)
+        public ActionResult Find(string attendee, string accessCode)
         {
-            var orderId = orderDao.LocateOrder(email, accessCode);
+            var attendeeId = Guid.Parse(attendee);
+            var orderId = orderDao.LocateOrder(attendeeId, accessCode);
 
             if (!orderId.HasValue)
             {

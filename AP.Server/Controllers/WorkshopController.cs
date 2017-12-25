@@ -32,13 +32,14 @@ namespace AP.Application
             return await workshop.GetAll();
         }
 
-        public async Task<IEnumerable<WorkshopShortViewModel>> GetAround(double latitude, double longitude, double distance)
+        public IEnumerable<WorkshopShortViewModel> GetAround(double latitude, double longitude, double distance)
         {
             if (distance < 0.1)
             {
-                await Task.FromException(new ArgumentException("distance very close"));
+                throw new ArgumentException("distance very close");
             }
-            return await workshop.GetByLocation(latitude, longitude,  distance);
+
+            return workshop.GetByLocation(latitude, longitude,  distance);
         }
 
         public IEnumerable<WorkshopViewModel> GetByCode(

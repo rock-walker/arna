@@ -62,7 +62,7 @@
                 var dto = DbContext.Find<DraftOrder>(@event.SourceId);
                 if (WasNotAlreadyHandled(dto, @event.Version))
                 {
-                    dto.RegistrantEmail = @event.Email;
+                    dto.AttendeeID = @event.AttendeeID;
                     dto.OrderVersion = @event.Version;
                     DbContext.Save(dto);
                     context.SaveChanges();

@@ -6,9 +6,9 @@ namespace AP.ViewModel.Mapper
 {
     public static class CategoryMapper
     {
-        public static MenuViewModel MapTo(this CategoryModel model)
+        public static CategoryViewModel MapTo(this CategoryModel model)
         {
-            return new MenuViewModel
+            return new CategoryViewModel
             {
                 Id = model.Id,
                 Link = model.Link,

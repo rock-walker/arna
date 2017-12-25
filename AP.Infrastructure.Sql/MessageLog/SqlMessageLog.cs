@@ -7,7 +7,6 @@
     using Infrastructure.MessageLog;
     using Infrastructure.Messaging;
     using Infrastructure.Serialization;
-    using Microsoft.EntityFrameworkCore;
     using EntityFramework.DbContextScope.Interfaces;
     using AP.Core.Database;
 

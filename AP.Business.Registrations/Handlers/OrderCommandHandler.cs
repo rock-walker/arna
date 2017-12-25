@@ -60,7 +60,8 @@
         public void Handle(AssignRegistrantDetails command)
         {
             var order = repository.Get(command.OrderId);
-            order.AssignRegistrant(command.LastName, command.Email);
+            order.AssignRegistrant(command.AttendeeID, command.AssignedDate, 
+                command.AutoID, command.CategoryIds, command.Description);
             repository.Save(order, command.Id.ToString());
         }
 

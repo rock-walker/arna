@@ -50,7 +50,7 @@
         }
 
         public int OrderVersion { get; set; }
-        public string RegistrantEmail { get; set; }
+        public Guid AttendeeID { get; set; }
         public string AccessCode { get; set; }
     }
 }

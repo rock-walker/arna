@@ -3,7 +3,7 @@ using AP.EntityModel.Booking;
 using AP.ViewModel.Workshop;
 using AutoMapper;
 
-namespace AP.Server.Application
+namespace AP.Server.ViewMapping
 {
     public class WorkshopOrderProfile : Profile
     {

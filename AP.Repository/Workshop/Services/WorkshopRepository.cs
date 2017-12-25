@@ -18,11 +18,11 @@ namespace AP.Repository.Workshop.Services
         {
         }
 
-        public async Task<IEnumerable<WorkshopData>> GetAll()
+        public Task<List<WorkshopData>> GetAll()
         {
-            return await Task.Run(() =>
+            return Task.Run(() =>
             {
-                return QueryAllShortWorkshops();//.Select(x => x.MapToShort());
+                return QueryAllShortWorkshops().ToList();
             });
         }
 
@@ -32,39 +32,39 @@ namespace AP.Repository.Workshop.Services
             var selectedWorkshops = new List<WorkshopData>();
             foreach (var id in ids)
             {
-                var w = workshops.Single(x => x.Slug == id);
-                selectedWorkshops.Add(w);
+                var w = workshops.FirstOrDefault(x => x.Slug == id);
+                if (w != null)
+                {
+                    selectedWorkshops.Add(w);
+                }
             }
 
             return selectedWorkshops;
         }
 
-        public async Task<IEnumerable<WorkshopData>> GetClosestLocations(
+        public IEnumerable<WorkshopData> GetClosestLocations(
             GeoLocation[] rectangle, double latitude, double longitude, double radius)
         {
-            return await Task.Run(() =>
-            {
-                var workshops = DbContext.Workshops
-                                .Include(x => x.Location)
-                                .AsNoTracking();
+            var workshops = DbContext.Workshops
+                            .Include(x => x.Location)
+                            .AsNoTracking();
 
-                var locations = DbContext.Locations.FromSql("GetClosestLocations @p0, @p1, @p2, @p3, @p4, @p5, @p6",
-                    rectangle[0].getLatitudeInRadians(),
-                    rectangle[0].getLongitudeInRadians(),
-                    rectangle[1].getLatitudeInRadians(),
-                    rectangle[1].getLongitudeInRadians(),
+            var locations = DbContext.Locations.FromSql("GetClosestLocations @p0, @p1, @p2, @p3, @p4, @p5, @p6",
+                rectangle[0].getLatitudeInRadians(),
+                rectangle[0].getLongitudeInRadians(),
+                rectangle[1].getLatitudeInRadians(),
+                rectangle[1].getLongitudeInRadians(),
 
-                    latitude,
-                    longitude,
-                    radius).ToList();
+                latitude,
+                longitude,
+                radius).ToList();
 
-                var filtered = from w in workshops
-                               join l in locations
-                               on w.LocationID equals l.ID
-                               select w;
+            var filtered = from w in workshops
+                           join l in locations
+                           on w.LocationID equals l.ID
+                           select w;
 
-                return filtered;//.Select(x => x.MapToShort());
-            });
+            return filtered;//.Select(x => x.MapToShort());
         }
 
         private IQueryable<WorkshopData> QueryFullWorkshop()

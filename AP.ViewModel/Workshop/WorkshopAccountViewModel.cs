@@ -1,4 +1,4 @@
-﻿using AP.Business.Model.Common;
+﻿using AP.ViewModel.Booking;
 using AP.ViewModel.Common;
 using System;
 using System.Collections.Generic;
@@ -32,7 +32,7 @@ namespace AP.ViewModel.Workshop
         public DateTime RegisterDate { get; set; }
         public bool IsPublished { get; set; }
 
-        public IEnumerable<DayTimetableModel> WorkshopWeekTimetable { get; set; }
+        public IEnumerable<DayTimetableViewModel> WorkshopWeekTimetable { get; set; }
         public IEnumerable<WorkshopCategoryViewModel> WorkshopCategories { get; set; }
         public IEnumerable<AutobrandViewModel> WorkshopAutobrands { get; set; }
         public ContactViewModel Contact { get; set; }

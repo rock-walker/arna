@@ -16,14 +16,7 @@ namespace AP.UnitTest.AutoMapperTests
         [OneTimeSetUp]
         public void Startup()
         {
-            //NOTE: Initialize() method should be used only once
             Mapper.Initialize(cfg => cfg.AddProfiles(new[] { "AP.Server" }));
-
-            //Mapper.Initialize(cfg => cfg.CreateMap<LocationViewModel, GeoMarker>());
-            //.ForMember(dest => dest.Mobile, opt => opt.MapFrom(src => src.Mobile))
-            //.ForMember(dest => dest.ID, option => option.Ignore()));
-
-            //Mapper.Configuration.AssertConfigurationIsValid();
         }
 
         [Test]
@@ -67,7 +60,7 @@ namespace AP.UnitTest.AutoMapperTests
 
             var timetable = new[]
             {
-                new DayTimetableModel
+                new DayTimetableViewModel
                 {
                     Start = TimeSpan.FromHours(9),
                     DinnerStart = TimeSpan.FromHours(13),

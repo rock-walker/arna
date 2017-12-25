@@ -72,7 +72,7 @@ namespace AP.Server.Application
             });
 
             // Event log database and handler.
-            services.AddScoped(provider => new SqlMessageLog(provider.GetService<IDbContextScopeFactory>(), 
+            services.AddTransient(provider => new SqlMessageLog(provider.GetService<IDbContextScopeFactory>(), 
                 provider.GetService<IAmbientDbContextLocator>(), serializer, metadataProvider));
             services.AddScoped<IEventHandler, SqlMessageLogHandler>();
             services.AddScoped<ICommandHandler, SqlMessageLogHandler>();

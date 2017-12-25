@@ -1,6 +1,5 @@
 ﻿using System;
 using AP.Repository.Context;
-using AP.Shared.Category;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +34,12 @@ using AP.Infrastructure.Sql.Processes;
 using AP.Infrastructure.Messaging;
 using AP.Infrastructure.Serialization;
 using Microsoft.Extensions.Logging;
+using AP.Business.Attendee;
+using AP.Repository.Attendee.Contracts;
+using AP.Repository.Attendee.Services;
+using AP.Repository.Booking.Contracts;
+using AP.Repository.Booking.Services;
+using AP.Business.Domain.Common.Category;
 
 namespace AP.Server.Application
 {
@@ -71,7 +76,7 @@ namespace AP.Server.Application
             services.AddScoped<IEmailSender, AuthEmailSenderService>();
             services.AddScoped<ISmsSender, TwilioSmsSenderService>();
             services.AddScoped<IAutobrandService, AutobrandService>();
-
+            services.AddScoped<IAttendeeAccountService, AttendeeAccountService>();
             services.AddScoped<IOrderDao, OrderDao>();
             services.AddSingleton<IWorkshopDao, CachingWorkshopDao>();
             services.AddScoped<IWorkshopDao, WorkshopDao>();
@@ -79,7 +84,7 @@ namespace AP.Server.Application
 
         private static void RegisterRepositories(IServiceCollection services)
         {
-            services.AddTransient<IDbContextScopeFactory>(provider => 
+            services.AddSingleton<IDbContextScopeFactory>(provider => 
                 new DbContextScopeFactory(
                     new DbContextFactoryInjector(provider)));
 
@@ -91,17 +96,20 @@ namespace AP.Server.Application
             services.AddScoped<IWorkshopAccountRepository, WorkshopAccountRepository>();
             services.AddScoped<IWorkshopFilterRepository, WorkshopFilterRepository>();
             services.AddScoped<IAutobrandRepository, AutobrandRepository>();
+            services.AddScoped<IAttendeeAccountRepository, AttendeeAccountRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
         }
 
         private static void RegisterDbContexts(IServiceCollection services, IConfigurationRoot config)
         {
             var connectionString = config.GetConnectionString(_dbConnectionName);
 
-            services.AddDbContext<GeneralContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<GeneralContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
             //CQRS proposes to make WorkshopContext transient
-            services.AddDbContext<WorkshopContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<WorkshopContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
             services.AddDbContext<IdentityContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<AttendeeContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
             services.AddDbContext<WorkshopRegistrationDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
             services.AddDbContext<RegistrationProcessManagerDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
             services.AddTransient<Func<IProcessManagerDataContext<RegistrationProcessManager>>, Func<SqlProcessManagerDataContext<RegistrationProcessManager>>>(
@@ -109,7 +117,7 @@ namespace AP.Server.Application
                 provider.GetService<ICommandBus>(), provider.GetService<ITextSerializer>(), provider.GetService<ILogger>()));
             services.AddDbContext<EventStoreDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
             services.AddSingleton(typeof(IEventSourcedRepository<>), typeof(SqlEventSourcedRepository<>));
-            services.AddDbContext<MessageLogDbContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<MessageLogDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
             services.AddIdentity<ApplicationUser, ApplicationRole>(configuration =>
                 {

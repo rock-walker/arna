@@ -4,19 +4,18 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="User\Providers\ProjectMembershipProvider.cs" />
     <Compile Remove="User\Providers\ProjectRoleProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Database\" />
     <Folder Include="User\Principal\" />
     <Folder Include="User\Providers\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="EntityFramework.DbContextScope" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

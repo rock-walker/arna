@@ -147,12 +147,16 @@
             this.Update(new OrderConfirmed());
         }
 
-        public void AssignRegistrant(string lastName, string email)
+        public void AssignRegistrant(Guid attendeeId, DateTime? bookingTime,
+            Guid autoId, IEnumerable<int> categoryIds, string description)
         {
             this.Update(new OrderRegistrantAssigned
             {
-                LastName = lastName,
-                Email = email,
+                AttendeeID = attendeeId,
+                BookingTime = bookingTime,
+                AutoID = autoId, 
+                CategoryIds = categoryIds,
+                Description = description
             });
         }
 

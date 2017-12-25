@@ -7,6 +7,8 @@ using AP.Core.GeoLocation;
 using EntityFramework.DbContextScope.Interfaces;
 using AutoMapper;
 using AP.Infrastructure.Messaging;
+using AP.Repository.Common.Contracts;
+using System.Linq;
 
 namespace AP.Business.AutoDomain.Workshop.Services
 {
@@ -15,39 +17,70 @@ namespace AP.Business.AutoDomain.Workshop.Services
         private const int EarthRadius = 6371;
         private readonly IDbContextScopeFactory _dbContextScope;
         private readonly IWorkshopRepository _workshopRepo;
+        private readonly ICategoryRepository categoryRepo;
         private readonly IEventBus eventBus;
 
-        public WorkshopService(IDbContextScopeFactory scope, IWorkshopRepository repository, IEventBus eventBus)
+        public WorkshopService(IDbContextScopeFactory scope, 
+            IWorkshopRepository repository, IEventBus eventBus,
+            ICategoryRepository categoryRepo)
         {
             _workshopRepo = repository;
             _dbContextScope = scope;
+            this.categoryRepo = categoryRepo;
             this.eventBus = eventBus;
         }
+
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()
         {
-            return await Task.Run(() => 
-                Mapper.Map<IEnumerable<WorkshopShortViewModel>>(_workshopRepo.GetAll())
-            );
+            using (var scope = _dbContextScope.CreateReadOnly())
+            {
+                var workshopsData = await _workshopRepo.GetAll();
+
+                return Mapper.Map<IEnumerable<WorkshopShortViewModel>>(workshopsData);
+            }
         }
 
         public IEnumerable<WorkshopViewModel> GetBySlug(IEnumerable<string> ids)
         {
             using (var scope = _dbContextScope.CreateReadOnly())
             {
-                var workshops = _workshopRepo.GetBySlug(ids);
-                var mappedWorkshops = Mapper.Map<IEnumerable<WorkshopViewModel>>(workshops);
+                //TODO: bullshit code, needs refactoring - 
+                //root cause: need to merge categories from 2 contexts
 
-                return mappedWorkshops;
+                var workshops = _workshopRepo.GetBySlug(ids).ToList();
+                if (workshops.Any())
+                {
+                    var dbCategories = workshops.Select(x =>
+                    {
+                        var workshopCategories = x.WorkshopCategories.Select(y => y.CategoryID);
+                        return categoryRepo.Get(workshopCategories);
+                    }).ToList();
+
+                    if (dbCategories.Count != 0)
+                    {
+                        for (var i = 0; i < dbCategories.Count; i++)
+                        {
+                            var wCategories = workshops[i].WorkshopCategories.ToList();
+                            var index = 0;
+                            foreach (var c in dbCategories[i])
+                            {
+                                wCategories[index++].Category = c;
+                            }
+                        }
+                    }
+                }
+
+                return Mapper.Map<IEnumerable<WorkshopViewModel>>(workshops);
             }
         }
 
-        public async Task<IEnumerable<WorkshopShortViewModel>> GetByLocation(double latitude, double longitute, double distance)
+        public IEnumerable<WorkshopShortViewModel> GetByLocation(double latitude, double longitute, double distance)
         {
             var geoLocation = GeoLocation.FromDegrees(latitude, longitute);
             var boundingCoordinates = geoLocation.BoundingCoordinates(distance);
             var radius = distance / EarthRadius;
 
-            return await Task.Run(() =>
+            using (var scope = _dbContextScope.CreateReadOnly())
             {
                 var locations = _workshopRepo.GetClosestLocations(boundingCoordinates,
                     geoLocation.getLatitudeInRadians(),
@@ -55,7 +88,7 @@ namespace AP.Business.AutoDomain.Workshop.Services
                     radius);
 
                 return Mapper.Map<IEnumerable<WorkshopShortViewModel>>(locations);
-            });
+            }
         }
     }
 }
