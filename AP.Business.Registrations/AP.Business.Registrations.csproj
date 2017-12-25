@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="6.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AP.Business.Model\AP.Business.Model.csproj" />
+    <ProjectReference Include="..\AP.Business.Workshop.Contracts\AP.Business.Workshop.Contracts.csproj" />
+    <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
+    <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
+    <ProjectReference Include="..\AP.Infrastructure\AP.Infrastructure.csproj" />
+    <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
+  </ItemGroup>
+
+</Project>

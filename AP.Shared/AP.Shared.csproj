@@ -16,4 +16,19 @@
     <ProjectReference Include="..\AP.ViewModel\AP.ViewModel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Resources\Annotations.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Annotations.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Annotations.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Annotations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

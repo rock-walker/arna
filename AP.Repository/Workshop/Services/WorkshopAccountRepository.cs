@@ -4,34 +4,15 @@ using AP.EntityModel.AutoDomain;
 using System.Threading.Tasks;
 using AP.Repository.Context;
 using EntityFramework.DbContextScope.Interfaces;
+using AP.Core.Database;
+using AP.EntityModel.Booking;
 
 namespace AP.Repository.Workshop.Services
 {
-    public class WorkshopAccountRepository : IWorkshopAccountRepository
+    public class WorkshopAccountRepository : AmbientContext<WorkshopContext>, IWorkshopAccountRepository
     {
-        private readonly IAmbientDbContextLocator _ambientLocator;
-
-        private WorkshopContext DbContext
+        public WorkshopAccountRepository(IAmbientDbContextLocator locator) : base(locator)
         {
-            get
-            {
-                var dbContext = _ambientLocator.Get<WorkshopContext>();
-                if (dbContext == null)
-                {
-                    throw new InvalidOperationException("No ambient DbContext of type WorkshopDbContext found. This means that this repository method has been called outside of the scope of a DbContextScope. A repository must only be accessed within the scope of a DbContextScope, which takes care of creating the DbContext instances that the repositories need and making them available as ambient contexts. This is what ensures that, for any given DbContext-derived type, the same instance is used throughout the duration of a business transaction. To fix this issue, use IDbContextScopeFactory in your top-level business logic service method to create a DbContextScope that wraps the entire business transaction that your service method implements. Then access this repository within that scope. Refer to the comments in the IDbContextScope.cs file for more details.");
-                }
-                return dbContext;
-            }
-        }
-
-        public WorkshopAccountRepository(IAmbientDbContextLocator locator)
-        {
-            if (locator == null)
-            {
-                throw new ArgumentNullException("ambientDbContextLocator");
-            }
-
-            _ambientLocator = locator;
         }
 
         public async Task<Guid> Add(WorkshopData account)
@@ -40,9 +21,35 @@ namespace AP.Repository.Workshop.Services
             return account.ID;
         }
 
-        public void Update(WorkshopData account)
+        public void Update(WorkshopData @new, WorkshopData source)
         {
-            DbContext.Update(account);
+            DbContext.Entry(source).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+            DbContext.Update(@new);
+        }
+
+        public WorkshopData LoadAnchors(WorkshopData account)
+        {
+            DbContext.Entry(account).Collection(p => p.Anchors).Load();
+            return account;
+        }
+
+        public WorkshopData LoadAddress(WorkshopData account)
+        {
+            DbContext.Entry(account).Reference(p => p.Address).Load();
+            DbContext.Entry(account.Address).Reference(p=>p.City).Load();
+
+            return account;
+        }
+
+        public bool Exists(Guid id)
+        {
+            var data = DbContext.Find<WorkshopData>(id);
+            return data != null;
+        }
+
+        public async Task CreateAnchor(AnchorType anchor)
+        {
+            await DbContext.AddAsync(anchor);
         }
     }
 }

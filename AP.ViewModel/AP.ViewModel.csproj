@@ -17,7 +17,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AP.Business.Model\AP.Business.Model.csproj" />
+    <ProjectReference Include="..\AP.Business.Registrations\AP.Business.Registrations.csproj" />
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
+    <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
   </ItemGroup>
 
 </Project>

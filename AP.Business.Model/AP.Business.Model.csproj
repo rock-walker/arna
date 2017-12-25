@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
+    <ProjectReference Include="..\AP.Infrastructure\AP.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

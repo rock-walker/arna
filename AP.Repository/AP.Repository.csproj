@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework.DbContextScope" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
@@ -21,6 +20,7 @@
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
     <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
     <ProjectReference Include="..\AP.EntityModesl\AP.EntityModel.csproj" />
+    <ProjectReference Include="..\AP.Infrastructure.Sql\AP.Infrastructure.Sql.csproj" />
   </ItemGroup>
 
 </Project>

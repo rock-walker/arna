@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using AP.Business.Model.Enums;
 using AP.EntityModel.AutoDomain;
 using System.Threading.Tasks;
-using AP.Repository.Base;
 using AP.Repository.Context;
 using EntityFramework.DbContextScope.Interfaces;
 using System.Linq;
+using AP.Core.Database;
 
 namespace AP.Repository.Common.Services
 {

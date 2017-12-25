@@ -8,6 +8,9 @@ namespace AP.Business.AutoPortal.Workshop.Contracts
     {
         Task<string> GetAccountPhone(string userId);
         Task<Guid> Add(WorkshopAccountViewModel workshopViewModel);
-        Task Update(WorkshopAccountViewModel workshopViewModel);
+        void Update(WorkshopAccountViewModel workshopViewModel);
+        Task CreateAnchor(Guid workshopId, AnchorTypeViewModel anchorView);
+        void Publish(Guid workshopId);
+        void Unpublish(Guid workshopId);
     }
 }

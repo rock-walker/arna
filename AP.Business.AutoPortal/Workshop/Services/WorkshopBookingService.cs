@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using AP.Repository.Workshop.Contracts;
 using AP.Business.AutoDomain.Workshop.Contracts;
@@ -8,7 +7,7 @@ using System.Linq;
 
 namespace AP.Business.AutoDomain.Workshop.Services
 {
-    public class WorkshopBookingService : IWorkshopBookingService
+    public class WorkshopBookingService
     {
         private readonly IWorkshopBookingRepository _repo;
         private readonly IWorkshopService _workshopService;
@@ -19,9 +18,9 @@ namespace AP.Business.AutoDomain.Workshop.Services
             _workshopService = workshopService;
         }
 
-        public async Task<IEnumerable<BookingMomentViewModel>> GeMomentBookings(IEnumerable<Guid> workshops)
+        public async Task<IEnumerable<BookingMomentViewModel>> GeMomentBookings(IEnumerable<string> workshops)
         {
-            var workshopsData = _workshopService.GetById(workshops);
+            var workshopsData = _workshopService.GetBySlug(workshops);
             var bookings = await _repo.GetMomentBookings(workshops);
             
             //That works really slower, than upper variant and save us from async db context access

@@ -3,7 +3,7 @@ using System;
 using AP.Repository.Context;
 using EntityFramework.DbContextScope.Interfaces;
 using System.Linq;
-using AP.Repository.Base;
+using AP.Core.Database;
 
 namespace AP.Repository.Common.Services
 {

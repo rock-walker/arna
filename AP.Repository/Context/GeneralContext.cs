@@ -7,6 +7,7 @@ namespace AP.Repository.Context
 {
     public class GeneralContext : DbContext, IDbContext
     {
+        private const string _schema = "Info";
         public GeneralContext(DbContextOptions<GeneralContext> options) : base(options)
         {
 
@@ -16,8 +17,8 @@ namespace AP.Repository.Context
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<CategoryData>().ToTable("Categories");
-            builder.Entity<AutoBrandData>().ToTable("AutoBrands");
+            builder.Entity<CategoryData>().ToTable("Categories", _schema);
+            builder.Entity<AutoBrandData>().ToTable("AutoBrands", _schema);
         }
     }
 }

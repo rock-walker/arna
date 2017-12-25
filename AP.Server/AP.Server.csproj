@@ -8,6 +8,14 @@
     <ApplicationInsightsAnnotationResourceId>/subscriptions/d60aa7e9-0120-4b28-af93-0a9cca1fe3b7/resourceGroups/SimAuto/providers/microsoft.insights/components/simautos</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE;NETCOREAPP1_1;EFCore</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Properties\PublishProfiles\SimAuto - Web Deploy.pubxml" />
   </ItemGroup>
@@ -38,7 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AP.Business.AutoPortal\AP.Business.AutoPortal.csproj" />
+    <ProjectReference Include="..\AP.Business.Customer\AP.Business.Attendee.csproj" />
     <ProjectReference Include="..\AP.Business.Domain.Common\AP.Business.Domain.Common.csproj" />
+    <ProjectReference Include="..\AP.Business.Registrations\AP.Business.Registrations.csproj" />
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
     <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
