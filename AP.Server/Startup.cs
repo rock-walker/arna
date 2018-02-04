@@ -35,7 +35,10 @@ namespace AP.Server
     public class Startup
     {
         private TelemetryClient _telemetryClient = new TelemetryClient();
-        public Startup(IHostingEnvironment env)
+        private BookingContainer bookingContainer = new BookingContainer();
+        private ILoggerFactory loggerFactory;
+
+        public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             try
             {
@@ -47,6 +50,7 @@ namespace AP.Server
                     .AddUserSecrets<Startup>();
 
                 Configuration = builder.Build();
+                this.loggerFactory = loggerFactory;
             }
             catch(Exception ex)
             {
@@ -78,6 +82,7 @@ namespace AP.Server
                 services.AddRouting();
 
                 DiContainer.RegisterScopes(services, Configuration);
+                bookingContainer.CreateContainer(services, loggerFactory);
 
                 AutomapperConfig.RegisterModels();
             }
@@ -123,15 +128,29 @@ namespace AP.Server
 
             //AppRoute.BuildRoutes(app);
 
-            RegisterEventHandlers(app.ApplicationServices, loggerFactory);
+            //RegisterSqlEventHandlers(app.ApplicationServices);
+            //RegisterAzureEventHandlers(app.ApplicationServices);
 
-            RegisterCommandHandlers(app.ApplicationServices);
+            //RegisterCommandHandlers(app.ApplicationServices);
 
-            StartListen(app.ApplicationServices);
+            //StartListen(app.ApplicationServices);
             StartupRoles.Create(app.ApplicationServices).Wait();
         }
+        /*
+        private void RegisterAzureEventHandlers(IServiceProvider provider)
+        {
+            //var busConfig = new ServiceBusConfig(azureSettings.ServiceBus, null);
+            var serializer = provider.GetService<ITextSerializer>();
+            RegisterEventProcessor<RegistrationProcessManagerRouter>(provider, busConfig, Topics.Events.Subscriptions.RegistrationPMNextSteps, serializer);
+        }
 
-        private static void RegisterEventHandlers(IServiceProvider provider, ILoggerFactory loggerFactory)
+        private void RegisterEventProcessor<T>(IServiceProvider provider, ServiceBusConfig busConfig, string subscriptionName, ITextSerializer serializer) where T : IEventHandler
+        {
+            var service = provider.GetService<T>();
+            busConfig.CreateEventProcessor(Topics.Events.Subscriptions.RegistrationPMNextSteps, service, serializer);
+        }
+        */
+        private static void RegisterSqlEventHandlers(IServiceProvider provider)
         {
             var eventProcessor = provider.GetService<IEventHandlerRegistry>();
             var ambientContext = provider.GetService<IAmbientDbContextLocator>();
@@ -149,8 +168,9 @@ namespace AP.Server
             var workshopDao = provider.GetService<IWorkshopDao>();
             var blob = provider.GetService<IBlobStorage>();
             var orderRepository = provider.GetService<IOrderRepository>();
+            var registrationLogger = provider.GetService<ILogger<RegistrationProcessManagerRouter>>();
 
-            eventProcessor.Register(new RegistrationProcessManagerRouter(sqlProcessManagerContext, loggerFactory));
+            eventProcessor.Register(new RegistrationProcessManagerRouter(sqlProcessManagerContext, registrationLogger));
             eventProcessor.Register(new DraftOrderViewModelGenerator(factory, draftLogger, ambientContext));
             eventProcessor.Register(new PricedOrderViewModelGenerator(factory, ambientContext, cache));
             eventProcessor.Register(new WorkshopViewModelGenerator(factory, commandBus, ambientContext, workshopLogger));

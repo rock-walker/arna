@@ -61,9 +61,6 @@ namespace AP.Server.Application
             RegisterDbContexts(services, configuration);
 
             RegisterAuthentication(services, configuration);
-
-            BookingContainer.SetupBookingHandlers(services);
-            BookingContainer.OnCreateContainer(services);
         }
 
         private static void RegisterControllers(IServiceCollection services)
@@ -79,7 +76,7 @@ namespace AP.Server.Application
             services.AddScoped<IAttendeeAccountService, AttendeeAccountService>();
             services.AddScoped<IOrderDao, OrderDao>();
             services.AddSingleton<IWorkshopDao, CachingWorkshopDao>();
-            services.AddScoped<IWorkshopDao, WorkshopDao>();
+            services.AddSingleton<IWorkshopDao, WorkshopDao>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
@@ -97,7 +94,7 @@ namespace AP.Server.Application
             services.AddScoped<IWorkshopFilterRepository, WorkshopFilterRepository>();
             services.AddScoped<IAutobrandRepository, AutobrandRepository>();
             services.AddScoped<IAttendeeAccountRepository, AttendeeAccountRepository>();
-            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddSingleton<IOrderRepository, OrderRepository>();
         }
 
         private static void RegisterDbContexts(IServiceCollection services, IConfigurationRoot config)
@@ -115,9 +112,9 @@ namespace AP.Server.Application
             services.AddTransient<Func<IProcessManagerDataContext<RegistrationProcessManager>>, Func<SqlProcessManagerDataContext<RegistrationProcessManager>>>(
                 provider => () => new SqlProcessManagerDataContext<RegistrationProcessManager>(() => provider.GetService<RegistrationProcessManagerDbContext>(), 
                 provider.GetService<ICommandBus>(), provider.GetService<ITextSerializer>(), provider.GetService<ILogger>()));
-            services.AddDbContext<EventStoreDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
-            services.AddSingleton(typeof(IEventSourcedRepository<>), typeof(SqlEventSourcedRepository<>));
-            services.AddDbContext<MessageLogDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+            //services.AddDbContext<EventStoreDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+            //services.AddSingleton(typeof(IEventSourcedRepository<>), typeof(SqlEventSourcedRepository<>));
+            //services.AddDbContext<MessageLogDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
             services.AddIdentity<ApplicationUser, ApplicationRole>(configuration =>
                 {

@@ -8,5 +8,6 @@ namespace AP.Repository.Workshop.Contracts
     {
         WorkshopData FindById(Guid id);
         Task<WorkshopData> FindByName(string name);
+        WorkshopData FindBySlug(string slug);
     }
 }

@@ -8,6 +8,10 @@
     <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLocal|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="User\Providers\ProjectMembershipProvider.cs" />
     <Compile Remove="User\Providers\ProjectRoleProvider.cs" />

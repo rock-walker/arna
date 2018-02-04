@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLocal|AnyCPU'" />
+
   <ItemGroup>
     <ProjectReference Include="..\AP.Infrastructure\AP.Infrastructure.csproj" />
   </ItemGroup>

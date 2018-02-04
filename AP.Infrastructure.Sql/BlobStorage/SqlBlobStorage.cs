@@ -3,6 +3,7 @@
     using AP.Core.Database;
     using AP.Infrastructure.BlobStorage;
     using EntityFramework.DbContextScope.Interfaces;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Simple local blob storage simulator for easy local debugging. 
@@ -10,15 +11,13 @@
     /// </summary>
     public class SqlBlobStorage : AmbientContext<BlobStorageDbContext>, IBlobStorage
     {
-        private readonly IDbContextScopeFactory _factory;
-
         public SqlBlobStorage(IAmbientDbContextLocator locator) : base(locator)
         {
         }
 
-        public byte[] Find(string id)
+        public Task<byte[]> Find(string id)
         {
-            return DbContext.Find(id);
+            return DbContext.FindAsync<byte[]>(id);
         }
 
         public void Save(string id, string contentType, byte[] blob)

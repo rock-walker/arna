@@ -5,6 +5,7 @@ using AP.ViewModel.Workshop;
 using AP.Business.AutoPortal.Workshop.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace AP.Server.Controllers
 {
@@ -12,14 +13,37 @@ namespace AP.Server.Controllers
     [Route("api/[controller]/[action]")]
     public class WorkshopAccountController : Controller
     {
-        private readonly IWorkshopAccountService _workshopAccountService;
-        private readonly IWorkshopFilterService _filterService;
-        
+        private readonly IWorkshopAccountService workshopAccountService;
+        private readonly IWorkshopFilterService filterService;
+
+        private WorkshopViewModel Workshop { get; set; }
+
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            var slug = (string)ControllerContext.RouteData.Values["slug"];
+            if (!string.IsNullOrEmpty(slug))
+            {
+                Workshop = filterService.FindBySlug(slug);
+
+                if (Workshop != null)
+                {
+                    var accessCode = (string)ControllerContext.RouteData.Values["accessCode"];
+
+                    if (accessCode == null || !string.Equals(accessCode, this.Workshop.AccessCode, StringComparison.Ordinal))
+                    {
+                        filterContext.Result = new UnauthorizedResult();
+                    }
+                }
+            }
+
+            base.OnActionExecuting(filterContext);
+        }
+
         public WorkshopAccountController(IWorkshopAccountService workshopAccountService,
                                          IWorkshopFilterService filterService)
         {
-            _workshopAccountService = workshopAccountService;
-            _filterService = filterService;
+            this.workshopAccountService = workshopAccountService;
+            this.filterService = filterService;
         }
 
         [HttpGet]
@@ -30,7 +54,7 @@ namespace AP.Server.Controllers
                 await Task.FromException(new ArgumentException("User ID is empty"));
             }
 
-            return await _workshopAccountService.GetAccountPhone(userId);
+            return await workshopAccountService.GetAccountPhone(userId);
         }
 
         [HttpGet]
@@ -41,7 +65,7 @@ namespace AP.Server.Controllers
                 await Task.FromException(new ArgumentException("Invalid workshop name"));
             }
 
-            return await _filterService.FindByName(name);
+            return await filterService.FindByName(name);
         }
 
         [HttpPost]
@@ -50,7 +74,7 @@ namespace AP.Server.Controllers
             if (ModelState.IsValid)
             {
                 workshop.RegisterDate = DateTime.UtcNow;
-                var workshopId = await _workshopAccountService.Add(workshop);
+                var workshopId = await workshopAccountService.Add(workshop);
 
                 return workshopId.ToString();
             }
@@ -63,18 +87,18 @@ namespace AP.Server.Controllers
         {
             if (ModelState.IsValid)
             {
-                _workshopAccountService.Update(workshop);
+                workshopAccountService.Update(workshop);
                 return WorkshopAccountResult.WorkshopUpdated;
             }
             return WorkshopAccountResult.WorkshopError;
         }
 
-        public StatusCodeResult Publish(string id)
+        [Route("/{slug}/[action]")]
+        public StatusCodeResult Publish()
         {
-            var workshopId = Guid.Parse(id);
             try
             {
-                _workshopAccountService.Publish(workshopId);
+                workshopAccountService.Publish(Workshop.ID);
             }
             catch (KeyNotFoundException)
             {
@@ -84,12 +108,12 @@ namespace AP.Server.Controllers
             return Ok();
         }
 
-        public StatusCodeResult Unpublish(string id)
+        [Route("/{slug}/[action]")]
+        public StatusCodeResult Unpublish()
         {
-            var workshopId = Guid.Parse(id);
             try
             {
-                _workshopAccountService.Unpublish(workshopId);
+                workshopAccountService.Unpublish(Workshop.ID);
             }
             catch (KeyNotFoundException)
             {
@@ -107,7 +131,7 @@ namespace AP.Server.Controllers
                 var workshopId = Guid.Parse(id);
                 //TODO: verify here, does workshop exist or not
 
-                await _workshopAccountService.CreateAnchor(workshopId, anchorView);
+                await workshopAccountService.CreateAnchor(workshopId, anchorView);
                 return 1;
             }
             return (int)WorkshopAccountResult.WorkshopError;

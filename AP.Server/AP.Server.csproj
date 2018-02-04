@@ -16,11 +16,16 @@
     <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLocal|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup>
     <None Remove="Properties\PublishProfiles\SimAuto - Web Deploy.pubxml" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Filters\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +56,7 @@
     <ProjectReference Include="..\AP.Business.Registrations\AP.Business.Registrations.csproj" />
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
     <ProjectReference Include="..\AP.Core\AP.Core.csproj" />
+    <ProjectReference Include="..\AP.Infrastructure.Azure\AP.Infrastructure.Azure.csproj" />
     <ProjectReference Include="..\AP.Repository\AP.Repository.csproj" />
     <ProjectReference Include="..\AP.Shared\AP.Shared.csproj" />
   </ItemGroup>

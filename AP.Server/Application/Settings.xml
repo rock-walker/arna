@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copy this template file as Settings.xml and replace the 
+    placeholders with your Azure access information -->
+<InfrastructureSettings xmlns="urn:simauto">
+  <ServiceBus>
+    <ServiceUriScheme>sb</ServiceUriScheme>
+    <ConnectionString>Endpoint=sb://simautons.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=8ukKHvyH6ujLGnF9K3lxn+3zl/MSlw7V4Y6w94nXqHg=</ConnectionString>
+    <Topics>
+      <Topic Path="commands" DuplicateDetectionHistoryTimeWindow="00:30:00">
+        <Subscription Name="sessionless" RequiresSession="false" SqlFilter="TypeName NOT IN ('AddAnchors','RemoveAnchors','MakeAnchorReservation','CommitAnchorReservation','CancelAnchorReservation')" />
+        <Subscription Name="anchorsavailability" RequiresSession="true" SqlFilter="TypeName IN ('AddAnchors','RemoveAnchors','MakeAnchorReservation','CommitAnchorReservation','CancelAnchorReservation')" />
+        <Subscription Name="log" RequiresSession="false"/>
+      </Topic>
+      <Topic Path="events" IsEventBus="true">
+        <Subscription Name="log" RequiresSession="false"/>
+        <Subscription Name="AP.Registration.RegistrationPMNextSteps" RequiresSession="false" SqlFilter="TypeName IN ('PaymentCompleted')"/>
+        <Subscription Name="AP.Registration.PricedOrderViewModelGeneratorV3" RequiresSession="true" SqlFilter="TypeName IN ('AnchorCreated','AnchorUpdated')"/>
+        <Subscription Name="AP.Registration.WorkshopViewModelGenerator" RequiresSession="true" SqlFilter="TypeName IN ('WorkshopCreated','WorkshopUpdated','WorkshopPublished','WorkshopUnpublished','AnchorCreated','AnchorUpdated')"/>
+      </Topic>
+      <Topic Path="eventsOrders" IsEventBus="true">
+        <Subscription Name="logOrders" RequiresSession="false"/>
+        <Subscription Name="AP.Registration.RegistrationPMOrderPlacedOrders" RequiresSession="false" SqlFilter="TypeName IN ('OrderPlaced')"/>
+        <Subscription Name="AP.Registration.RegistrationPMNextStepsOrders" RequiresSession="false" SqlFilter="TypeName IN ('OrderUpdated','OrderConfirmed')"/>
+        <Subscription Name="AP.Registration.OrderViewModelGeneratorOrders" RequiresSession="true" SqlFilter="TypeName IN ('OrderPlaced','OrderUpdated','OrderPartiallyReserved','OrderReservationCompleted','OrderRegistrantAssigned','OrderConfirmed','OrderPaymentConfirmed')"/>
+        <Subscription Name="AP.Registration.PricedOrderViewModelOrders" RequiresSession="true" SqlFilter="TypeName IN ('OrderPlaced','OrderTotalsCalculated','OrderConfirmed','OrderExpired','AnchorAssignmentsCreated')"/>
+        <Subscription Name="AP.Registration.AnchorAssignmentsViewModelOrders" RequiresSession="true" SqlFilter="TypeName IN ('AnchorAssignmentsCreated','AnchorAssigned','AnchorUnassigned','AnchorAssignmentUpdated')"/>
+        <Subscription Name="AP.Registration.AnchorAssignmentsHandlerOrders" RequiresSession="true" SqlFilter="TypeName IN ('OrderConfirmed','OrderPaymentConfirmed')"/>
+        <Subscription Name="AP.Workshop.OrderEventHandlerOrders" RequiresSession="true" SqlFilter="TypeName IN ('OrderPlaced','OrderRegistrantAssigned','OrderTotalsCalculated','OrderConfirmed','OrderExpired','AnchorAssignmentsCreated','AnchorAssigned','AnchorAssignmentUpdated','AnchorUnassigned')"/>
+      </Topic>
+      <Topic Path="eventsAvailability" IsEventBus="true">
+        <Subscription Name="logAvail" RequiresSession="false"/>
+        <Subscription Name="AP.Registration.RegistrationPMNextStepsAvail" RequiresSession="false" SqlFilter="TypeName IN ('AnchorsReserved')"/>
+        <Subscription Name="AP.Registration.ConferenceViewModelAvail" RequiresSession="true" SqlFilter="TypeName IN ('AvailableAnchorsChanged','AnchorsReserved','AnchorsReservationCancelled')"/>
+      </Topic>
+    </Topics>
+  </ServiceBus>
+  <EventSourcing>
+    <!-- Use a valid Windows Azure storage account, as the development storage emulator does not support entity projections, which we are using in the Event Store -->
+    <ConnectionString>DefaultEndpointsProtocol=https;AccountName=simauto;AccountKey=xla2evDsyulPL59PDOfT9Sv9TKj3lAPasu2qyuSQMOJUs2kHz2ohLf911gOJQcgdCau0XEwaU8mwquB3Vh5yHQ==;TableEndpoint=https://simauto.table.cosmosdb.azure.com:443/;</ConnectionString>
+    <!-- Table name in Windows Azure has restrictions: Only Alphanumeric Characters, Case-Insensitive, 3 to 63 Characters, May Not Begin With a Numeric Character -->
+    <OrdersTableName>WorkshopEventStoreOrders</OrdersTableName>
+    <AnchorsAvailabilityTableName>WorkshopEventStoreAnchors</AnchorsAvailabilityTableName>
+  </EventSourcing>
+  <MessageLog>
+    <ConnectionString>DefaultEndpointsProtocol=https;AccountName=simauto;AccountKey=xla2evDsyulPL59PDOfT9Sv9TKj3lAPasu2qyuSQMOJUs2kHz2ohLf911gOJQcgdCau0XEwaU8mwquB3Vh5yHQ==;TableEndpoint=https://simauto.table.cosmosdb.azure.com:443/;</ConnectionString>
+    <!-- Table name in Windows Azure has restrictions: Only Alphanumeric Characters, Case-Insensitive, 3 to 63 Characters, May Not Begin With a Numeric Character -->
+    <TableName>WorkshopMessageLog</TableName>
+  </MessageLog>
+  <BlobStorage>
+    <ConnectionString>DefaultEndpointsProtocol=https;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==</ConnectionString>
+    <!-- Container name in Windows Azure has restrictions: Only Lower-case Alphanumeric Characters and Dashes, 3 to 63 Characters, May Not Begin a Dash, May Not Contain Two Consecutive Dashes -->
+    <RootContainerName>workshop-read-model</RootContainerName>
+  </BlobStorage>
+</InfrastructureSettings>

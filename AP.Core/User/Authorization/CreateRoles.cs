@@ -11,8 +11,8 @@ namespace AP.Core.User.Authorization
         public static async Task Create(IServiceProvider serviceProvider)
         {
             //initializing custom roles 
-            var RoleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-            var UserManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var RoleManager = serviceProvider.GetService<RoleManager<ApplicationRole>>();
+            var UserManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
 
             var roleNames = Enum.GetValues(typeof(Roles));
             IdentityResult roleResult;

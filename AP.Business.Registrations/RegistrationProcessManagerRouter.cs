@@ -22,13 +22,11 @@
         ICommandHandler<ExpireRegistrationProcess>
     {
         private readonly Func<IProcessManagerDataContext<RegistrationProcessManager>> contextFactory;
-        private readonly ILoggerFactory loggerFactory;
-        private readonly ILogger logger;
+        private readonly ILogger<RegistrationProcessManagerRouter> logger;
 
-        public RegistrationProcessManagerRouter(Func<IProcessManagerDataContext<RegistrationProcessManager>> contextFactory, ILoggerFactory loggerFactory)
+        public RegistrationProcessManagerRouter(Func<IProcessManagerDataContext<RegistrationProcessManager>> contextFactory, ILogger<RegistrationProcessManagerRouter> logger)
         {
             this.contextFactory = contextFactory;
-            logger = loggerFactory.CreateLogger<RegistrationProcessManagerRouter>();
         }
 
         public void Handle(OrderPlaced @event)

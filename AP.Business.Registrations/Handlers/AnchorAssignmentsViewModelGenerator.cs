@@ -82,7 +82,8 @@
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "By design")]
         private OrderAnchors Find(Guid id)
         {
-            var dto = this.storage.Find(GetAnchorAssignmentsBlobId(id));
+            //TODO: move to async version of this method
+            var dto = this.storage.Find(GetAnchorAssignmentsBlobId(id)).Result;
             if (dto == null)
                 return null;
 
