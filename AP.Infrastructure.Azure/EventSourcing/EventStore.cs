@@ -54,7 +54,7 @@
             //var backgroundRetryStrategy = new ExponentialBackoff(10, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(1));
             //var blockingRetryStrategy = new Incremental(3, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
             var blockingRetryStrategy = new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1) };
-            pendingEventsQueueRetryPolicy = Policy.Handle<Exception>().WaitAndRetry(blockingRetryStrategy, (ex, ts, countRetry, context) => {
+            pendingEventsQueueRetryPolicy = Policy.Handle<Exception>().WaitAndRetryAsync(blockingRetryStrategy, (ex, ts, countRetry, context) => {
                 var handler = this.Retrying;
                 if (handler != null)
                 {
@@ -68,10 +68,12 @@
                 logger.LogWarning("An error occurred in attempt number {1} to access table storage (EventStore): {0}", ex.Message, countRetry);
             });
 
+            /*
             this.eventStoreRetryPolicy.Execute(() => {
                 var cloudTable = tableClient.GetTableReference(tableName);// CreateTableIfNotExist(tableName)
                 cloudTable.CreateIfNotExistsAsync().Wait();
             });
+            */
         }
 
         /// <summary>
@@ -146,15 +148,19 @@
         {
             var query = GetEntitiesQuery(partitionKey, UnpublishedRowKeyPrefix, UnpublishedRowKeyPrefixUpperLimit);
                 pendingEventsQueueRetryPolicy
-                .Execute(
-                    //ac => query.BeginExecuteSegmented(ac, null),
-                    //ar => query.EndExecuteSegmented(ar),
-                    () =>
-                    {
-                        var all = query.Result.ToList();
-                        successCallback(query.Result, false);
-                    }/*,
-                    exceptionCallback*/);
+                    .ExecuteAsync(
+                        async () =>
+                        {
+                            try
+                            {
+                                var all = await query;
+                                successCallback(all, false);
+                            }
+                            catch (Exception ex)
+                            {
+                                exceptionCallback(ex);
+                            }
+                        });
         }
 
         /// <summary>
@@ -169,23 +175,22 @@
         public void DeletePendingAsync(string partitionKey, string rowKey, Action<bool> successCallback, Action<Exception> exceptionCallback)
         {
             var tableRef = this.tableClient.GetTableReference(tableName);
-            var item = new EventTableServiceEntity { PartitionKey = partitionKey, RowKey = rowKey };
-            TableBatchOperation batch = new TableBatchOperation
-            {
-                TableOperation.Merge(item),
-                TableOperation.Delete(item)
-            };
+            var item = new EventTableServiceEntity { PartitionKey = partitionKey, RowKey = rowKey, ETag = "*" };
+            TableOperation deleteOperation = TableOperation.Delete(item);
 
-            pendingEventsQueueRetryPolicy.Execute(() =>
+            pendingEventsQueueRetryPolicy
+                .ExecuteAsync(async() =>
                 {
                     try
                     {
-                        tableRef.ExecuteBatchAsync(batch).Wait();
+                        await tableRef.ExecuteAsync(deleteOperation);
+                        successCallback(true);
                     }
                     catch (StorageException ex)
                     {
                         // ignore if entity was already deleted.
                         //var inner = ex.InnerException as DataServiceClientException;
+                        exceptionCallback(ex);
                         if (ex.HResult != (int)HttpStatusCode.NotFound)
                         {
                             throw;
@@ -202,57 +207,61 @@
         /// <returns>The list of all partitions.</returns>
         public IEnumerable<string> GetPartitionsWithPendingEvents()
         {
-            var tableRef = this.tableClient.GetTableReference(tableName);
-            var minKeyFilter = TableQuery.GenerateFilterCondition("rowkey", QueryComparisons.GreaterThanOrEqual, UnpublishedRowKeyPrefix);
-            var maxKeyFilter = TableQuery.GenerateFilterCondition("rowkey", QueryComparisons.LessThanOrEqual, UnpublishedRowKeyPrefixUpperLimit);
+            var tableRef = tableClient.GetTableReference(tableName);
 
-            var query = (new TableQuery<EventTableServiceEntity>())
-                .Where(minKeyFilter)
-                .Where(maxKeyFilter)
-                .Select(new[] { "PartitionKey" });
+            var query = (new TableQuery<DynamicTableEntity>()).Where(
+                    TableQuery.CombineFilters(
+                        TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, UnpublishedRowKeyPrefix),
+                        TableOperators.And,
+                        TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.LessThanOrEqual, UnpublishedRowKeyPrefixUpperLimit)))
+                    .Select(new[] { "PartitionKey" });
 
-            var task = tableRef.ExecuteQuerySegmentedAsync(query, null);
+            EntityResolver<string> resolver = (pk, rk, ts, props, etag) => pk;
+            var task = tableRef.ExecuteQuerySegmentedAsync(query, resolver, null);
 
             var result = new BlockingCollection<string>();
             var tokenSource = new CancellationTokenSource();
 
-            this.pendingEventsQueueRetryPolicy.Execute(() =>
+            this.pendingEventsQueueRetryPolicy.ExecuteAsync(async (ts) =>
                 {
-                    var events = task.Result;
-
-                    foreach (var key in events.Results.Select(x => x.PartitionKey).Distinct())
+                    try
                     {
-                        result.Add(key);
-                    }
+                        var events = await task;
 
-                    //TODO: comment temporarily - no time to investigate
-                    /*
-                    while (events)
-                    {
-                        try
+                        foreach (var key in events.Results.Distinct())
                         {
-                            rs = this.pendingEventsQueueRetryPolicy.ExecuteAction(() => rs.GetNext());
-                            foreach (var key in rs.Results.Select(x => x.PartitionKey).Distinct())
+                            result.Add(key);
+                        }
+
+                        //TODO: comment temporarily - no time to investigate
+                        /*
+                        while (events.HasMoreResults)
+                        {
+                            try
                             {
-                                result.Add(key);
+                                rs = this.pendingEventsQueueRetryPolicy.ExecuteAction(() => rs.GetNext());
+                                foreach (var key in rs.Results.Select(x => x.PartitionKey).Distinct())
+                                {
+                                    result.Add(key);
+                                }
+                            }
+                            catch
+                            {
+                                // Cancel is to force an exception being thrown in the consuming enumeration thread
+                                // TODO: is there a better way to get the correct exception message instead of an OperationCancelledException in the consuming thread?
+                                tokenSource.Cancel();
+                                throw;
                             }
                         }
-                        catch
-                        {
-                            // Cancel is to force an exception being thrown in the consuming enumeration thread
-                            // TODO: is there a better way to get the correct exception message instead of an OperationCancelledException in the consuming thread?
-                            tokenSource.Cancel();
-                            throw;
-                        }
+                        */
+                        result.CompleteAdding();
                     }
-                    */
-                    result.CompleteAdding();
-                }/*,
-                ex =>
-                {
-                    tokenSource.Cancel();
-                    throw ex;
-                }*/);
+                    catch (Exception ex)
+                    {
+                        ts.ThrowIfCancellationRequested();
+                        throw ex;
+                    }
+                }, tokenSource.Token);
 
             return result.GetConsumingEnumerable(tokenSource.Token);
         }
@@ -261,16 +270,15 @@
         {
             var tableRef = tableClient.GetTableReference(tableName);
 
-            var query = new TableQuery<EventTableServiceEntity>()
-                .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
-            /*
-            var retrieveOperation = TableOperation.Retrieve<EventTableServiceEntity>(partitionKey, minRowKey);
-            var partitionKeyCondition = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey);
-            var rowMinKeyCondition = TableQuery.GenerateFilterCondition("rowkey", QueryComparisons.GreaterThanOrEqual, minRowKey);
-            var rowMaxKeyCondition = TableQuery.GenerateFilterCondition("rowkey", QueryComparisons.LessThanOrEqual, maxRowKey);
+            var query = new TableQuery<EventTableServiceEntity>().Where(
+                TableQuery.CombineFilters(
+                    TableQuery.CombineFilters(
+                        TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey),
+                        TableOperators.And,
+                        TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, minRowKey)),
+                    TableOperators.And,
+                TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.LessThanOrEqual, maxRowKey)));
 
-            var query = (new TableQuery<EventTableServiceEntity>()).Where(partitionKeyCondition).Where(rowMinKeyCondition).Where(rowMaxKeyCondition);
-            */
             return tableRef.ExecuteQuerySegmentedAsync(query, null);
 
             //return task.Result.Result as EventTableServiceEntity;

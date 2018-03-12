@@ -133,7 +133,7 @@ namespace AP.Server
 
             //RegisterCommandHandlers(app.ApplicationServices);
 
-            //StartListen(app.ApplicationServices);
+            StartListen(app.ApplicationServices);
             StartupRoles.Create(app.ApplicationServices).Wait();
         }
         /*
@@ -192,10 +192,11 @@ namespace AP.Server
 
         private static void StartListen(IServiceProvider provider)
         {
-            var command = provider.GetService<Func<string, IProcessor>>()("CommandProcessor");
-            command.Start();
-            var events = provider.GetService<Func<string, IProcessor>>()("EventProcessor");
-            events.Start();
+            var processors = provider.GetServices<IProcessor>();
+            foreach (var proc in processors)
+            {
+                proc.Start();
+            }
         }
     }
 }

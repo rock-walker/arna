@@ -15,9 +15,9 @@
             this.receiver = receiver;
         }
 
-        public void SaveMessage(Message brokeredMessage)
+        public void SaveMessage(Message msg)
         {
-            this.eventLog.Save(brokeredMessage.ToMessageLogEntity());
+            this.eventLog.Save(msg.ToMessageLogEntity());
         }
 
         public void Start()

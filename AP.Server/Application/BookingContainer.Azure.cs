@@ -33,7 +33,7 @@ namespace AP.Server.Application
         {
             var azureSettings = InfrastructureSettings.Read("Application\\Settings.xml");
 
-            var busConfig = new ServiceBusConfig(azureSettings.ServiceBus);
+            var busConfig = new ServiceBusConfig(azureSettings.ServiceBus, loggerFactory);
             busConfig.Initialize();
 
             // blob
@@ -48,28 +48,28 @@ namespace AP.Server.Application
             services.AddSingleton<IMessageSender>(/*"seatsavailability",*/ new TopicSender(azureSettings.ServiceBus, Topics.EventsAvailability.Path, topicLogger));
             var eventBus = new EventBus(eventsTopicSender, metadata, serializer);
 
-            var commonLogger = loggerFactory.CreateLogger<ILogger>();
+            var subscriptionLogger = loggerFactory.CreateLogger<SubscriptionReceiver>();
+            var sessionSubscriptionLogger = loggerFactory.CreateLogger<SessionSubscriptionReceiver>();
             var sessionlessCommandProcessor =
-                new CommandProcessor(new SubscriptionReceiver(azureSettings.ServiceBus, Topics.Commands.Path, Topics.Commands.Subscriptions.Sessionless, false, commonLogger), serializer);
-            var seatsAvailabilityCommandProcessor =
-                new CommandProcessor(new SessionSubscriptionReceiver(azureSettings.ServiceBus, Topics.Commands.Path, Topics.Commands.Subscriptions.Anchorsavailability, false, commonLogger), serializer);
+                new CommandProcessor(new SubscriptionReceiver(azureSettings.ServiceBus, Topics.Commands.Path, Topics.Commands.Subscriptions.Sessionless, false, subscriptionLogger), serializer, loggerFactory.CreateLogger<CommandProcessor>());
+            var anchorsAvailabilityCommandProcessor =
+                new CommandProcessor(new SessionSubscriptionReceiver(azureSettings.ServiceBus, Topics.Commands.Path, Topics.Commands.Subscriptions.Anchorsavailability, false, sessionSubscriptionLogger), serializer, loggerFactory.CreateLogger<CommandProcessor>());
 
             var synchronousCommandBus = new SynchronousCommandBusDecorator(commandBus, loggerFactory.CreateLogger<SynchronousCommandBusDecorator>());
             services.AddSingleton<ICommandBus>(synchronousCommandBus);
 
             services.AddSingleton<IEventBus>(eventBus);
             services.AddSingleton<IProcessor>(/*"SessionlessCommandProcessor", */sessionlessCommandProcessor);
-            services.AddSingleton<IProcessor>(/*"SeatsAvailabilityCommandProcessor", */seatsAvailabilityCommandProcessor);
+            services.AddSingleton<IProcessor>(/*"AnchorsAvailabilityCommandProcessor", */anchorsAvailabilityCommandProcessor);
 
             RegisterRepositories(services, azureSettings, loggerFactory);
 
             var serviceProvider = services.BuildServiceProvider();
 
-            RegisterEventProcessors(services, serviceProvider, busConfig, serializer);
+            RegisterEventProcessors(services, serviceProvider, busConfig, serializer, loggerFactory);
 
             var commandHandlers = serviceProvider.GetServices<ICommandHandler>().ToList();
-            RegisterCommandHandlers(services, commandHandlers, 
-                sessionlessCommandProcessor, seatsAvailabilityCommandProcessor);
+            RegisterCommandHandlers(services, commandHandlers, sessionlessCommandProcessor, anchorsAvailabilityCommandProcessor);
 
             // handle order commands inline, as they do not have competition.
             // TODO: Get exactly OrderCommandHandler
@@ -80,19 +80,19 @@ namespace AP.Server.Application
 
             services.AddSingleton<IProcessor>(/*"EventLogger", */new AzureMessageLogListener(
                 new AzureMessageLogWriter(messageLogAccount, azureSettings.MessageLog.TableName),
-                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.Events.Path, Topics.Events.Subscriptions.Log, true, commonLogger)));
+                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.Events.Path, Topics.Events.Subscriptions.Log, true, subscriptionLogger)));
 
             services.AddSingleton<IProcessor>(/*"OrderEventLogger", */new AzureMessageLogListener(
                 new AzureMessageLogWriter(messageLogAccount, azureSettings.MessageLog.TableName),
-                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.EventsOrders.Path, Topics.EventsOrders.Subscriptions.LogOrders, true, commonLogger)));
+                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.EventsOrders.Path, Topics.EventsOrders.Subscriptions.LogOrders, true, subscriptionLogger)));
 
             services.AddSingleton<IProcessor>(/*"SeatsAvailabilityEventLogger", */new AzureMessageLogListener(
                 new AzureMessageLogWriter(messageLogAccount, azureSettings.MessageLog.TableName),
-                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.EventsAvailability.Path, Topics.EventsAvailability.Subscriptions.LogAvail, true, commonLogger)));
+                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.EventsAvailability.Path, Topics.EventsAvailability.Subscriptions.LogAvail, true, subscriptionLogger)));
 
             services.AddSingleton<IProcessor>(/*"CommandLogger", */new AzureMessageLogListener(
                 new AzureMessageLogWriter(messageLogAccount, azureSettings.MessageLog.TableName),
-                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.Commands.Path, Topics.Commands.Subscriptions.Log, true, commonLogger)));
+                new SubscriptionReceiver(azureSettings.ServiceBus, Topics.Commands.Path, Topics.Commands.Subscriptions.Log, true, subscriptionLogger)));
         }
 
         private void RegisterRepositories(IServiceCollection services, InfrastructureSettings azureSettings, ILoggerFactory loggerFactory)
@@ -109,31 +109,38 @@ namespace AP.Server.Application
             services.AddSingleton<IPendingEventsQueue>(anchorsAvailabilityEventStore);
 
             services.AddSingleton<IEventStoreBusPublisher, EventStoreBusPublisher>(
-                provider => new EventStoreBusPublisher(provider.GetService<IMessageSender>(),
-                    provider.GetService<IPendingEventsQueue>(),
+                provider => new EventStoreBusPublisher(
+                    provider.GetServices<IMessageSender>().ToList()[1],
+                    provider.GetServices<IPendingEventsQueue>().First(),
+                    loggerFactory.CreateLogger<EventStoreBusPublisher>()));
+
+            services.AddSingleton<IEventStoreBusPublisher, EventStoreBusPublisher>(
+                provider => new EventStoreBusPublisher(
+                    provider.GetServices<IMessageSender>().Last(),
+                    provider.GetServices<IPendingEventsQueue>().Last(),
                     loggerFactory.CreateLogger<EventStoreBusPublisher>()));
 
             //TODO: fix repos for each eventStores
             services.AddSingleton<IEventSourcedRepository<Order>, AzureEventSourcedRepository<Order>>(
                 provider => new AzureEventSourcedRepository<Order>(
-                    provider.GetService<IEventStore>(), //"orders"
-                    provider.GetService<IEventStoreBusPublisher>(), //"orders"
+                    provider.GetServices<IEventStore>().First(), //"orders"
+                    provider.GetServices<IEventStoreBusPublisher>().First(), //"orders"
                     provider.GetService<ITextSerializer>(),
                     provider.GetService<IMetadataProvider>(),
                     provider.GetService<IMemoryCache>()));
 
             services.AddSingleton<IEventSourcedRepository<AnchorAssignments>, AzureEventSourcedRepository<AnchorAssignments>>(
                 provider => new AzureEventSourcedRepository<AnchorAssignments>(
-                    provider.GetService<IEventStore>(), //"orders"
-                    provider.GetService<IEventStoreBusPublisher>(), //"orders"
+                    provider.GetServices<IEventStore>().First(), //"orders"
+                    provider.GetServices<IEventStoreBusPublisher>().First(), //"orders"
                     provider.GetService<ITextSerializer>(),
                     provider.GetService<IMetadataProvider>(),
                     provider.GetService<IMemoryCache>()));
 
             services.AddSingleton<IEventSourcedRepository<AnchorsAvailability>, AzureEventSourcedRepository<AnchorsAvailability>>(
                 provider => new AzureEventSourcedRepository<AnchorsAvailability>(
-                    provider.GetService<IEventStore>(), //"anchorsavailability"
-                    provider.GetService<IEventStoreBusPublisher>(), //"anchorsavailability"
+                    provider.GetServices<IEventStore>().Last(), //"anchorsavailability"
+                    provider.GetServices<IEventStoreBusPublisher>().Last(), //"anchorsavailability"
                     provider.GetService<ITextSerializer>(),
                     provider.GetService<IMetadataProvider>(),
                     provider.GetService<IMemoryCache>()));
@@ -141,29 +148,30 @@ namespace AP.Server.Application
             services.AddSingleton<IProcessor>(
                 //"OrdersEventStoreBusPublisher",
                 provider => 
-                    new PublisherProcessorAdapter(provider.GetService<IEventStoreBusPublisher>()/*"orders"*/, this.cancellationTokenSource.Token));
+                    new PublisherProcessorAdapter(provider.GetServices<IEventStoreBusPublisher>().First()/*"orders"*/, cancellationTokenSource.Token));
             services.AddSingleton<IProcessor>(
                 //"SeatsAvailabilityEventStoreBusPublisher",
                 provider =>
-                    new PublisherProcessorAdapter(provider.GetService<IEventStoreBusPublisher>()/*"seatsavailability"*/, this.cancellationTokenSource.Token));
+                    new PublisherProcessorAdapter(provider.GetServices<IEventStoreBusPublisher>().Last()/*"anchorsavailability"*/, cancellationTokenSource.Token));
         }
 
-        private void RegisterEventProcessors(IServiceCollection services, IServiceProvider provider, ServiceBusConfig busConfig, ITextSerializer serializer)
+        private void RegisterEventProcessors(IServiceCollection services, IServiceProvider provider, ServiceBusConfig busConfig, ITextSerializer serializer, ILoggerFactory loggerFactory)
         {
-            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.Events.Subscriptions.RegistrationPMNextSteps, serializer);
-            RegisterEventProcessor<PricedOrderViewModelGenerator>(services, provider, busConfig, Topics.Events.Subscriptions.PricedOrderViewModelGeneratorV3, serializer);
-            RegisterEventProcessor<WorkshopViewModelGenerator>(services, provider, busConfig, Topics.Events.Subscriptions.WorkshopViewModelGenerator, serializer);
+            var logger = loggerFactory.CreateLogger<IProcessor>();
+            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.Events.Subscriptions.RegistrationPMNextSteps, serializer, logger);
+            RegisterEventProcessor<PricedOrderViewModelGenerator>(services, provider, busConfig, Topics.Events.Subscriptions.PricedOrderViewModelGenerator, serializer, logger);
+            RegisterEventProcessor<WorkshopViewModelGenerator>(services, provider, busConfig, Topics.Events.Subscriptions.WorkshopViewModelGenerator, serializer, logger);
 
-            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.RegistrationPMOrderPlacedOrders, serializer);
-            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.RegistrationPMNextStepsOrders, serializer);
-            RegisterEventProcessor<DraftOrderViewModelGenerator>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.OrderViewModelGeneratorOrders, serializer);
-            RegisterEventProcessor<PricedOrderViewModelGenerator>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.PricedOrderViewModelOrders, serializer);
-            RegisterEventProcessor<AnchorAssignmentsViewModelGenerator>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.AnchorAssignmentsViewModelOrders, serializer);
-            RegisterEventProcessor<AnchorAssignmentsHandler>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.AnchorAssignmentsHandlerOrders, serializer);
-            RegisterEventProcessor<OrderEventHandler>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.OrderEventHandlerOrders, serializer);
+            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.RegistrationPMOrderPlacedOrders, serializer, logger);
+            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.RegistrationPMNextStepsOrders, serializer, logger);
+            RegisterEventProcessor<DraftOrderViewModelGenerator>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.OrderViewModelGeneratorOrders, serializer, logger);
+            RegisterEventProcessor<PricedOrderViewModelGenerator>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.PricedOrderViewModelOrders, serializer, logger);
+            RegisterEventProcessor<AnchorAssignmentsViewModelGenerator>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.AnchorAssignmentsViewModelOrders, serializer, logger);
+            RegisterEventProcessor<AnchorAssignmentsHandler>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.AnchorAssignmentsHandlerOrders, serializer, logger);
+            RegisterEventProcessor<OrderEventHandler>(services, provider, busConfig, Topics.EventsOrders.Subscriptions.OrderEventHandlerOrders, serializer, logger);
 
-            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.EventsAvailability.Subscriptions.RegistrationPMNextStepsAvail, serializer);
-            RegisterEventProcessor<WorkshopViewModelGenerator>(services, provider, busConfig, Topics.EventsAvailability.Subscriptions.ConferenceViewModelAvail, serializer);
+            RegisterEventProcessor<RegistrationProcessManagerRouter>(services, provider, busConfig, Topics.EventsAvailability.Subscriptions.RegistrationPMNextStepsAvail, serializer, logger);
+            RegisterEventProcessor<WorkshopViewModelGenerator>(services, provider, busConfig, Topics.EventsAvailability.Subscriptions.WorkshopViewModelAvail, serializer, logger);
         }
 
         private static void RegisterCommandHandlers(IServiceCollection services, List<ICommandHandler> commandHandlers,
@@ -172,20 +180,18 @@ namespace AP.Server.Application
             var anchorsAvailabilityHandler = commandHandlers.First(x => x.GetType().GetTypeInfo().IsAssignableFrom(typeof(AnchorsAvailabilityHandler)));
 
             anchorsAvailabilityRegistry.Register(anchorsAvailabilityHandler);
-            foreach (var commandHandler in commandHandlers.Where(x => x != anchorsAvailabilityHandler))
+            foreach (var commandHandler in commandHandlers.Where(x => x.GetType() != anchorsAvailabilityHandler.GetType()))
             {
                 sessionlessRegistry.Register(commandHandler);
             }
         }
 
         private void RegisterEventProcessor<T>(IServiceCollection services, IServiceProvider provider, 
-            ServiceBusConfig busConfig, string subscriptionName, ITextSerializer serializer)
+            ServiceBusConfig busConfig, string subscriptionName, ITextSerializer serializer, ILogger<IProcessor> logger)
             where T : IEventHandler
         {
             services.AddSingleton<IProcessor>(busConfig.CreateEventProcessor(
-                subscriptionName,
-                provider.GetService<T>(),
-                serializer));
+                subscriptionName, provider.GetService<T>(), serializer, logger));
         }
 
         // to satisfy the IProcessor requirements.

@@ -5,6 +5,7 @@
     using System.Threading;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Extensions.Logging;
+    using Polly;
 
     /// <summary>
     /// Implements an asynchronous sender of messages to a Windows Azure Service Bus topic.
@@ -14,7 +15,7 @@
         private readonly Uri serviceUri;
         private readonly ServiceBusSettings settings;
         private readonly string topic;
-        private readonly RetryPolicy retryPolicy;
+        private readonly Polly.Retry.RetryPolicy retryPolicy;
         private readonly TopicClient topicClient;
         private readonly ILogger<TopicSender> logger;
 
@@ -29,8 +30,14 @@
             this.logger = logger;
 
             //TODO: verify how does it work. Was changed to newest version of ServiceBus library
-            retryPolicy = RetryPolicy.Default;
-            topicClient = new TopicClient(settings.ConnectionString, topic, retryPolicy);
+            retryPolicy = Policy.Handle<Exception>(e => {
+                logger.LogWarning(
+                    "An error occurred while sending message to the topic {1}: {0}",
+                    e.Message, topic);
+                return true;
+            })
+            .WaitAndRetryAsync(4, retry => TimeSpan.FromSeconds(Math.Pow(2, retry)));
+            topicClient = new TopicClient(settings.ConnectionString, topic);
         }
 
         /// <summary>
@@ -62,10 +69,21 @@
         {
             try
             {
-                await retryPolicy.RunOperation(
-                    async () =>
-                       await topicClient.SendAsync(messageFactory()).ConfigureAwait(false)
-                       , TimeSpan.FromMinutes(1)).ConfigureAwait(false);
+                await retryPolicy.ExecuteAsync(
+                    async () => {
+                        try
+                        {
+                            await topicClient.SendAsync(messageFactory());
+                            successCallback();
+                        }
+                        catch (Exception ex)
+                        {
+                            exceptionCallback(ex);
+
+                            //handle exception in retry block
+                            throw;
+                        }
+                    });
             }
             catch (Exception ex)
             {

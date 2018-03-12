@@ -4,6 +4,7 @@
     using AP.Infrastructure.Messaging;
     using AP.Infrastructure.Messaging.Handling;
     using AP.Infrastructure.Serialization;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Processes incoming commands from the bus and routes them to the appropriate 
@@ -19,8 +20,8 @@
         /// <param name="receiver">The receiver to use. If the receiver is <see cref="IDisposable"/>, it will be disposed when the processor is 
         /// disposed.</param>
         /// <param name="serializer">The serializer to use for the message body.</param>
-        public CommandProcessor(IMessageReceiver receiver, ITextSerializer serializer)
-            : base(receiver, serializer)
+        public CommandProcessor(IMessageReceiver receiver, ITextSerializer serializer, ILogger<IProcessor> logger)
+            : base(receiver, serializer, logger)
         {
             this.commandDispatcher = new CommandDispatcher();
         }

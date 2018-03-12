@@ -28,11 +28,6 @@
             };
 
             retryPolicy = Policy.Handle<Exception>().WaitAndRetry(3, retry => TimeSpan.FromSeconds(Math.Pow(2, retry)));
-
-            retryPolicy.Execute(() => {
-                var tableRef = tableClient.GetTableReference(tableName);
-                tableRef.CreateIfNotExistsAsync().Wait();
-            });
         }
 
         public void Save(MessageLogEntity entity)

@@ -7,7 +7,7 @@
 			/// <summary>
 			/// conference/commands
 			/// </summary>
-			public const string Path = "workshop/commands";
+			public const string Path = "commands";
 
 			public static class Subscriptions
 			{
@@ -31,7 +31,7 @@
 			/// <summary>
 			/// conference/events
 			/// </summary>
-			public const string Path = "workshop/events";
+			public const string Path = "events";
 
 			public static class Subscriptions
 			{
@@ -46,7 +46,7 @@
 				/// <summary>
 				/// Registration.PricedOrderViewModelGeneratorV3
 				/// </summary>
-				public const string PricedOrderViewModelGeneratorV3 = "AP.Registration.PricedOrderViewModelGeneratorV3";
+				public const string PricedOrderViewModelGenerator = "AP.Registration.PricedOrderViewModelGenerator";
 				/// <summary>
 				/// Registration.ConferenceViewModelGenerator
 				/// </summary>
@@ -59,7 +59,7 @@
 			/// <summary>
 			/// conference/eventsOrders
 			/// </summary>
-			public const string Path = "workshop/eventsOrders";
+			public const string Path = "eventsOrders";
 
 			public static class Subscriptions
 			{
@@ -103,7 +103,7 @@
 			/// <summary>
 			/// conference/eventsAvailability
 			/// </summary>
-			public const string Path = "workshop/eventsAvailability";
+			public const string Path = "eventsAvailability";
 
 			public static class Subscriptions
 			{
@@ -118,7 +118,7 @@
 				/// <summary>
 				/// Registration.ConferenceViewModelAvail
 				/// </summary>
-				public const string ConferenceViewModelAvail = "AP.Registration.ConferenceViewModelAvail";
+				public const string WorkshopViewModelAvail = "AP.Registration.WorkshopViewModelAvail";
 			}
 		}
 

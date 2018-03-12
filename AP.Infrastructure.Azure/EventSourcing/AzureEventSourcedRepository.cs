@@ -130,7 +130,8 @@
 
                 if (deserialized.Any())
                 {
-                    return this.entityFactory.Invoke(id, deserialized);
+                    var res = this.entityFactory.Invoke(id, deserialized);
+                    return res;
                 }
             }
 

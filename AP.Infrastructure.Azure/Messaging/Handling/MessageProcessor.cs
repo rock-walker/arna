@@ -20,18 +20,17 @@
         private bool started = false;
         private readonly IMessageReceiver receiver;
         private readonly ITextSerializer serializer;
-        private readonly ILogger<MessageProcessor> logger;
+        private readonly ILogger<IProcessor> logger;
         private readonly object lockObject = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageProcessor"/> class.
         /// </summary>
-        protected MessageProcessor(IMessageReceiver receiver, ITextSerializer serializer /*ILogger<MessageProcessor> logger*/)
+        protected MessageProcessor(IMessageReceiver receiver, ITextSerializer serializer, ILogger<IProcessor> logger)
         {
             this.receiver = receiver;
             this.serializer = serializer;
-            //TODO: investigate about LoggerFactory to skip injection
-            //this.logger = logger;
+            this.logger = logger;
         }
 
         protected ITextSerializer Serializer { get { return this.serializer; } }
@@ -156,12 +155,12 @@
         {
             if (message.SystemProperties.DeliveryCount > MaxProcessingRetries)
             {
-                logger.LogError("An error occurred while processing the message" + traceIdentifier + " and will be dead-lettered:\r\n{0}", e);
+                logger.LogError($"An error occurred while processing the message {traceIdentifier} and will be dead-lettered:\r\n{e.Message}");
                 return MessageReleaseAction.DeadLetterMessage(e.Message, e.ToString());
             }
             else
             {
-                logger.LogWarning("An error occurred while processing the message" + traceIdentifier + " and will be abandoned:\r\n{0}", e);
+                logger.LogWarning($"An error occurred while processing the message {traceIdentifier} and will be abandoned:\r\n{e.Message}");
                 return MessageReleaseAction.AbandonMessage;
             }
         }

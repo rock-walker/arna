@@ -16,8 +16,8 @@
     {
         private readonly EventDispatcher eventDispatcher;
 
-        public EventProcessor(IMessageReceiver receiver, ITextSerializer serializer /*ILogger logger*/)
-            : base(receiver, serializer /*logger*/)
+        public EventProcessor(IMessageReceiver receiver, ITextSerializer serializer, ILogger<IProcessor> logger)
+            : base(receiver, serializer, logger)
         {
             this.eventDispatcher = new EventDispatcher();
         }

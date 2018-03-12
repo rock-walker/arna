@@ -34,8 +34,11 @@ namespace AP.Infrastructure.Azure.Utils
             var tcs = new TaskCompletionSource<bool>();
             var timer = new Timer(self =>
             {
-                ((Timer)self).Dispose();
-                tcs.TrySetResult(true);
+                var t = (Timer)self;
+                if (t != null)
+                {
+                    tcs.TrySetResult(true);
+                }
             }, null, dueTime, Timeout.Infinite);
             //timer.Change(dueTime, Timeout.Infinite);
             return tcs.Task;

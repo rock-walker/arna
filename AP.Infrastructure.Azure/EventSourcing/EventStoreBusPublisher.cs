@@ -38,12 +38,11 @@
         private readonly DynamicThrottling dynamicThrottling;
 
         public EventStoreBusPublisher(IMessageSender sender, 
-            IPendingEventsQueue queue, //IEventStoreBusPublisherInstrumentation instrumentation,
+            IPendingEventsQueue queue,
             ILogger<EventStoreBusPublisher> logger)
         {
             this.sender = sender;
             this.queue = queue;
-            //this.instrumentation = instrumentation;
             this.logger = logger;
 
             this.enqueuedKeys = new BlockingCollection<string>();
@@ -61,45 +60,49 @@
 
         public void Start(CancellationToken cancellationToken)
         {
-            Task.Factory.StartNew(
-                () =>
+            Task.Run(
+                async () =>
                 {
                     try
                     {
-                        foreach (var key in GetThrottlingEnumerable(this.enqueuedKeys.GetConsumingEnumerable(cancellationToken), cancellationToken))
+                        while (!cancellationToken.IsCancellationRequested)
                         {
-                            if (!cancellationToken.IsCancellationRequested)
+                            foreach (var key in GetThrottlingEnumerable(this.enqueuedKeys.GetConsumingEnumerable(cancellationToken), cancellationToken))
                             {
                                 ProcessPartition(key);
                             }
-                            else
-                            {
-                                this.EnqueueIfNotExists(key);
-                                return;
-                            }
+
+                            await Task.Delay(TimeSpan.FromSeconds(10));
                         }
                     }
                     catch (OperationCanceledException)
                     {
                         return;
                     }
-                },
-                TaskCreationOptions.LongRunning);
+                });
 
             // Query through all partitions to check for pending events, as there could be
             // stored events that were never published before the system was rebooted.
-            Task.Factory.StartNew(
-                () =>
+            Task.Run(
+                async () =>
                 {
-                    foreach (var partitionKey in this.queue.GetPartitionsWithPendingEvents())
+                    try
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            return;
+                        while (!cancellationToken.IsCancellationRequested)
+                        {
+                            foreach (var partitionKey in this.queue.GetPartitionsWithPendingEvents())
+                            {
+                                this.EnqueueIfNotExists(partitionKey);
+                            }
 
-                        this.EnqueueIfNotExists(partitionKey);
+                            await Task.Delay(TimeSpan.FromSeconds(10));
+                        }
                     }
-                },
-                TaskCreationOptions.LongRunning);
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                });
 
             this.dynamicThrottling.Start(cancellationToken);
         }
@@ -110,8 +113,6 @@
                 throw new ArgumentNullException(partitionKey);
 
             EnqueueIfNotExists(partitionKey);
-
-            //this.instrumentation.EventsPublishingRequested(eventCount);
         }
 
         public void Dispose()

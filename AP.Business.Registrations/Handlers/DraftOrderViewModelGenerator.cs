@@ -22,15 +22,7 @@
     {
         private readonly IDbContextScopeFactory factory;
         private readonly ILogger<DraftOrderViewModelGenerator> logger;
-        /*
-        static DraftOrderViewModelGenerator()
-        {
-            // Mapping old version of the OrderPaymentConfirmed event to the new version.
-            // Currently it is being done explicitly by the consumer, but this one in particular could be done
-            // at the deserialization level, as it is just a rename, not a functionality change.
-            Mapper.Initialize(cfg => cfg.CreateMap<OrderPaymentConfirmed, OrderConfirmed>());
-        }
-        */
+
         public DraftOrderViewModelGenerator(IDbContextScopeFactory factory, 
             ILogger<DraftOrderViewModelGenerator> logger,
             IAmbientDbContextLocator locator) : base (locator)

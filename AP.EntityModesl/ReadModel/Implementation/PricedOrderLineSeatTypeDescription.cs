@@ -3,7 +3,7 @@
     using System;
     using System.ComponentModel.DataAnnotations;
 
-    public class PricedOrderLineSeatTypeDescription
+    public class PricedOrderLineAnchorTypeDescription
     {
         [Key]
         public Guid SeatTypeID { get; set; }

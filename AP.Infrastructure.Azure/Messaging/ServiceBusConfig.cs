@@ -16,12 +16,14 @@
         private const string RuleName = "Custom";
         private bool initialized;
         private ServiceBusSettings settings;
-        private readonly ILogger logger;
+        private ILoggerFactory factory;
+        private readonly ILogger<ServiceBusConfig> logger;
 
-        public ServiceBusConfig(ServiceBusSettings settings)
+        public ServiceBusConfig(ServiceBusSettings settings, ILoggerFactory factory)
         {
             this.settings = settings;
-            this.logger = new LoggerFactory().CreateLogger<ServiceBusConfig>();
+            this.factory = factory;
+            this.logger = factory.CreateLogger<ServiceBusConfig>();
         }
 
         public void Initialize()
@@ -56,7 +58,7 @@
         // Can't really infer the topic from the subscription, since subscriptions of the same 
         // name can exist across different topics (i.e. "all" currently)
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Instrumentation disposed by receiver")]
-        public EventProcessor CreateEventProcessor(string subscription, IEventHandler handler, ITextSerializer serializer)
+        public EventProcessor CreateEventProcessor(string subscription, IEventHandler handler, ITextSerializer serializer, ILogger<IProcessor> logger)
         {
             if (!this.initialized)
                 throw new InvalidOperationException("Service bus configuration has not been initialized.");
@@ -90,7 +92,7 @@
                 //var instrumentation = new SessionSubscriptionReceiverInstrumentation(subscription, instrumentationEnabled);
                 try
                 {
-                    receiver = (IMessageReceiver)new SessionSubscriptionReceiver(this.settings, topicSettings.Path, subscription, true, logger);//instrumentation);
+                    receiver = (IMessageReceiver)new SessionSubscriptionReceiver(this.settings, topicSettings.Path, subscription, true, factory.CreateLogger<SessionSubscriptionReceiver>());//instrumentation);
                 }
                 catch
                 {
@@ -103,7 +105,7 @@
                 //var instrumentation = new SubscriptionReceiverInstrumentation(subscription, instrumentationEnabled);
                 try
                 {
-                    receiver = (IMessageReceiver)new SubscriptionReceiver(this.settings, topicSettings.Path, subscription, true, logger);//instrumentation);
+                    receiver = (IMessageReceiver)new SubscriptionReceiver(this.settings, topicSettings.Path, subscription, true, factory.CreateLogger<SubscriptionReceiver>());//instrumentation);
                 }
                 catch
                 {
@@ -115,7 +117,7 @@
             EventProcessor processor;
             try
             {
-                processor = new EventProcessor(receiver, serializer);
+                processor = new EventProcessor(receiver, serializer, logger);
             }
             catch
             {

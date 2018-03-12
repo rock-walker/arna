@@ -165,11 +165,11 @@
         {
             using (var context = this.contextFactory.Create())
             {
-                var dto = DbContext.Find<PricedOrderLineSeatTypeDescription>(@event.SourceId);
+                var dto = DbContext.Find<PricedOrderLineAnchorTypeDescription>(@event.SourceId);
                 if (dto == null)
                 {
-                    dto = new PricedOrderLineSeatTypeDescription { SeatTypeID = @event.SourceId };
-                    DbContext.Set<PricedOrderLineSeatTypeDescription>().Add(dto);
+                    dto = new PricedOrderLineAnchorTypeDescription { SeatTypeID = @event.SourceId };
+                    DbContext.Set<PricedOrderLineAnchorTypeDescription>().Add(dto);
                 }
 
                 dto.Name = @event.Name;
@@ -181,11 +181,11 @@
         {
             using (var context = this.contextFactory.Create())
             {
-                var dto = DbContext.Find<PricedOrderLineSeatTypeDescription>(@event.SourceId);
+                var dto = DbContext.Find<PricedOrderLineAnchorTypeDescription>(@event.SourceId);
                 if (dto == null)
                 {
-                    dto = new PricedOrderLineSeatTypeDescription { SeatTypeID = @event.SourceId };
-                    DbContext.Set<PricedOrderLineSeatTypeDescription>().Add(dto);
+                    dto = new PricedOrderLineAnchorTypeDescription { SeatTypeID = @event.SourceId };
+                    DbContext.Set<PricedOrderLineAnchorTypeDescription>().Add(dto);
                 }
 
                 dto.Name = @event.Name;
@@ -221,15 +221,15 @@ This read model generator has an expectation that the EventBus will deliver mess
             }
         } 
         
-        private List<PricedOrderLineSeatTypeDescription> GetSeatTypeDescriptions(IEnumerable<Guid> seatTypeIds)
+        private List<PricedOrderLineAnchorTypeDescription> GetSeatTypeDescriptions(IEnumerable<Guid> seatTypeIds)
         {
-            var result = new List<PricedOrderLineSeatTypeDescription>();
+            var result = new List<PricedOrderLineAnchorTypeDescription>();
             var notCached = new List<Guid>();
 
-            PricedOrderLineSeatTypeDescription cached;
+            PricedOrderLineAnchorTypeDescription cached;
             foreach (var seatType in seatTypeIds)
             {
-                cached = (PricedOrderLineSeatTypeDescription)this.seatDescriptionsCache.Get("SeatDescription_" + seatType.ToString());
+                cached = (PricedOrderLineAnchorTypeDescription)this.seatDescriptionsCache.Get("SeatDescription_" + seatType.ToString());
                 if (cached == null)
                 {
                     notCached.Add(seatType);
@@ -243,7 +243,7 @@ This read model generator has an expectation that the EventBus will deliver mess
             if (notCached.Count > 0)
             {
                 var notCachedArray = notCached.ToArray();
-                var seatTypeDescriptions = DbContext.Query<PricedOrderLineSeatTypeDescription>()
+                var seatTypeDescriptions = DbContext.Query<PricedOrderLineAnchorTypeDescription>()
                     .Where(x => notCachedArray.Contains(x.SeatTypeID))
                     .ToList();
 

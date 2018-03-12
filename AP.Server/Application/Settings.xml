@@ -14,7 +14,7 @@
       <Topic Path="events" IsEventBus="true">
         <Subscription Name="log" RequiresSession="false"/>
         <Subscription Name="AP.Registration.RegistrationPMNextSteps" RequiresSession="false" SqlFilter="TypeName IN ('PaymentCompleted')"/>
-        <Subscription Name="AP.Registration.PricedOrderViewModelGeneratorV3" RequiresSession="true" SqlFilter="TypeName IN ('AnchorCreated','AnchorUpdated')"/>
+        <Subscription Name="AP.Registration.PricedOrderViewModelGenerator" RequiresSession="true" SqlFilter="TypeName IN ('AnchorCreated','AnchorUpdated')"/>
         <Subscription Name="AP.Registration.WorkshopViewModelGenerator" RequiresSession="true" SqlFilter="TypeName IN ('WorkshopCreated','WorkshopUpdated','WorkshopPublished','WorkshopUnpublished','AnchorCreated','AnchorUpdated')"/>
       </Topic>
       <Topic Path="eventsOrders" IsEventBus="true">
@@ -30,7 +30,7 @@
       <Topic Path="eventsAvailability" IsEventBus="true">
         <Subscription Name="logAvail" RequiresSession="false"/>
         <Subscription Name="AP.Registration.RegistrationPMNextStepsAvail" RequiresSession="false" SqlFilter="TypeName IN ('AnchorsReserved')"/>
-        <Subscription Name="AP.Registration.ConferenceViewModelAvail" RequiresSession="true" SqlFilter="TypeName IN ('AvailableAnchorsChanged','AnchorsReserved','AnchorsReservationCancelled')"/>
+        <Subscription Name="AP.Registration.WorkshopViewModelAvail" RequiresSession="true" SqlFilter="TypeName IN ('AvailableAnchorsChanged','AnchorsReserved','AnchorsReservationCancelled')"/>
       </Topic>
     </Topics>
   </ServiceBus>

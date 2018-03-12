@@ -27,6 +27,7 @@
         public RegistrationProcessManagerRouter(Func<IProcessManagerDataContext<RegistrationProcessManager>> contextFactory, ILogger<RegistrationProcessManagerRouter> logger)
         {
             this.contextFactory = contextFactory;
+            this.logger = logger;
         }
 
         public void Handle(OrderPlaced @event)

@@ -1,6 +1,4 @@
-﻿// Based on http://windowsazurecat.com/2011/09/best-practices-leveraging-windows-azure-service-bus-brokered-messaging-api/
-
-namespace AP.Infrastructure.Azure.Messaging
+﻿namespace AP.Infrastructure.Azure.Messaging
 {
     using System;
     using System.Diagnostics;
@@ -32,7 +30,6 @@ namespace AP.Infrastructure.Azure.Messaging
     {
         private static readonly TimeSpan ReceiveLongPollingTimeout = TimeSpan.FromMinutes(1);
 
-        private readonly Uri serviceUri;
         private readonly ServiceBusSettings settings;
         private readonly string topic;
         //private readonly ISubscriptionReceiverInstrumentation instrumentation;
@@ -43,30 +40,22 @@ namespace AP.Infrastructure.Azure.Messaging
         private readonly DynamicThrottling dynamicThrottling;
         private CancellationTokenSource cancellationSource;
         private SubscriptionClient client;
-        private QueueClient queue;
-        private ILogger logger;
+        private ILogger<SubscriptionReceiver> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubscriptionReceiver"/> class, 
         /// automatically creating the topic and subscription if they don't exist.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Instrumentation disabled in this overload")]
-        public SubscriptionReceiver(ServiceBusSettings settings, string topic, string subscription, bool processInParallel, ILogger logger)
+        public SubscriptionReceiver(ServiceBusSettings settings, string topic, string subscription, bool processInParallel, ILogger<SubscriptionReceiver> logger)
         {
             this.settings = settings;
             this.topic = topic;
             this.subscription = subscription;
             this.processInParallel = processInParallel;
             this.logger = logger;
-            //this.instrumentation = instrumentation;
 
-            //this.tokenProvider = TokenProvider.CreateSharedSecretTokenProvider(settings.TokenIssuer, settings.TokenAccessKey);
-            //this.serviceUri = ServiceBusEnvironment.CreateServiceUri(settings.ServiceUriScheme, settings.ServiceNamespace, settings.ServicePath);
-
-            //var messagingFactory = MessagingFactory.Create(this.serviceUri, tokenProvider);
-            //this.client = messagingFactory.CreateSubscriptionClient(topic, subscription);
             this.client = new SubscriptionClient(settings.ConnectionString, topic, subscription);
-            this.queue = new QueueClient(settings.ConnectionString, topic, ReceiveMode.PeekLock, Microsoft.Azure.ServiceBus.RetryPolicy.Default);
             if (this.processInParallel)
             {
                 this.client.PrefetchCount = 18;
@@ -85,15 +74,11 @@ namespace AP.Infrastructure.Azure.Messaging
                     workCompletedParallelismGain: 1,
                     intervalForRestoringDegreeOfParallelism: 8000);
 
-            receiveRetryPolicy = Policy.Handle<Exception>().WaitAndRetry(10, (r) => TimeSpan.FromMilliseconds(100),//TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(1)));
-            (ex, ts) =>
+            receiveRetryPolicy = Policy.Handle<Exception>().WaitAndRetryAsync(3, (r) => TimeSpan.FromMilliseconds(900),//, TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(1));
+            (ex, ts, attemps, cc) =>
             {
                 this.dynamicThrottling.Penalize();
-                logger.LogWarning(
-                    "An error occurred in attempt number {1} to receive a message from subscription {2}: {0}",
-                    ex.Message,
-                    222,//e.CurrentRetryCount,
-                    this.subscription);
+                logger.LogWarning($"An error occurred in attempt number {attemps} to receive a message from subscription {subscription}: {ex.Message}");
             });
         }
 
@@ -111,9 +96,13 @@ namespace AP.Infrastructure.Azure.Messaging
             {
                 this.MessageHandler = messageHandler;
                 this.cancellationSource = new CancellationTokenSource();
-                Task.Factory.StartNew(() =>
-                    this.ReceiveMessages(this.cancellationSource.Token),
-                    this.cancellationSource.Token);
+                var msgHandlerOptions = new MessageHandlerOptions(HandleMessageException)
+                {
+                    MaxConcurrentCalls = 4,
+                    AutoComplete = false,
+                };
+
+                this.client.RegisterMessageHandler(ReceiveMessages, msgHandlerOptions);
                 this.dynamicThrottling.Start(this.cancellationSource.Token);
             }
         }
@@ -170,153 +159,82 @@ namespace AP.Infrastructure.Azure.Messaging
         /// <summary>
         /// Receives the messages in an endless asynchronous loop.
         /// </summary>
-        private async Task ReceiveMessages(CancellationToken cancellationToken)
+        private async Task ReceiveMessages(Message msg, CancellationToken cancellationToken)
         {
-            // Declare an action to receive the next message in the queue or end if cancelled.
-            Func<Task> receiveNext = null;
-
-            // Declare an action acting as a callback whenever a non-transient exception occurs while receiving or processing messages.
-            Func<Exception, Task> recoverReceive = null;
-
-            // Declare an action responsible for the core operations in the message receive loop.
-            Func<Task> receiveMessage = (async () =>
-            {
-                // Use a retry policy to execute the Receive action in an asynchronous and reliable fashion.
-                await this.receiveRetryPolicy.ExecuteAsync
-                (
-                    async () =>
+            await this.receiveRetryPolicy.ExecuteAsync
+            (
+                () =>
+                {
+                    try
                     {
-                        try
+                        Task releaseTask;
+
+                        if (msg != null)
                         {
-                            Message msg = null;  // this.client.BeginReceive(ReceiveLongPollingTimeout, cb, null);
-                                                 // Process the message once it was successfully received
-                            if (this.processInParallel)
+                            var roundtripStopwatch = Stopwatch.StartNew();
+
+                            var releaseAction = MessageReleaseAction.AbandonMessage;
+
+                            try
                             {
-                                // Continue receiving and processing new messages asynchronously
-                                await Task.Factory.StartNew(receiveNext);
-                            }
-
-                            // Check if we actually received any messages.
-                            if (msg != null)
-                            {
-                                var roundtripStopwatch = Stopwatch.StartNew();
-                                long schedulingElapsedMilliseconds = 0;
-                                long processingElapsedMilliseconds = 0;
-
-                                await Task.Factory.StartNew(async () =>
-                                    {
-                                        var releaseAction = MessageReleaseAction.AbandonMessage;
-
-                                        try
-                                        {
-                                            //this.instrumentation.MessageReceived();
-
-                                            schedulingElapsedMilliseconds = roundtripStopwatch.ElapsedMilliseconds;
-
-                                            // Make sure the process was told to stop receiving while it was waiting for a new message.
-                                            if (!cancellationToken.IsCancellationRequested)
-                                            {
-                                                try
-                                                {
-                                                    try
-                                                    {
-                                                        // Process the received message.
-                                                        releaseAction = this.InvokeMessageHandler(msg);
-
-                                                        processingElapsedMilliseconds = roundtripStopwatch.ElapsedMilliseconds - schedulingElapsedMilliseconds;
-                                                        //this.instrumentation.MessageProcessed(releaseAction.Kind == MessageReleaseActionKind.Complete, processingElapsedMilliseconds);
-                                                    }
-                                                    catch
-                                                    {
-                                                        processingElapsedMilliseconds = roundtripStopwatch.ElapsedMilliseconds - schedulingElapsedMilliseconds;
-                                                        //this.instrumentation.MessageProcessed(false, processingElapsedMilliseconds);
-
-                                                        throw;
-                                                    }
-                                                }
-                                                finally
-                                                {
-                                                    if (roundtripStopwatch.Elapsed > TimeSpan.FromSeconds(45))
-                                                    {
-                                                        this.dynamicThrottling.Penalize();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        finally
-                                        {
-                                            // Ensure that any resources allocated by a BrokeredMessage instance are released.
-                                            await this.ReleaseMessage(msg, releaseAction, processingElapsedMilliseconds, schedulingElapsedMilliseconds, roundtripStopwatch);
-                                        }
-
-                                        if (!processInParallel)
-                                        {
-                                            // Continue receiving and processing new messages until told to stop.
-                                            await receiveNext();
-                                        }
-                                    });
-                            }
-                            else
-                            {
-                                this.dynamicThrottling.NotifyWorkCompleted();
-                                if (!this.processInParallel)
+                                if (!cancellationToken.IsCancellationRequested)
                                 {
-                                    // Continue receiving and processing new messages until told to stop.
-                                    await receiveNext();
+                                    try
+                                    {
+                                        releaseAction = this.InvokeMessageHandler(msg);
+                                    }
+                                    catch
+                                    {
+                                        throw;
+                                    }
+                                    finally
+                                    {
+                                        if (roundtripStopwatch.Elapsed > TimeSpan.FromSeconds(45))
+                                        {
+                                            this.dynamicThrottling.Penalize();
+                                        }
+                                    }
                                 }
                             }
+                            finally
+                            {
+                                releaseTask = ReleaseMessage(msg, releaseAction, roundtripStopwatch);
+                            }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            // Invoke a custom action to indicate that we have encountered an exception and
-                            // need further decision as to whether to continue receiving messages.
-                            await recoverReceive(ex);
-                        };
-                    });
-            });
+                            this.dynamicThrottling.NotifyWorkCompleted();
+                            return Task.CompletedTask;
+                        }
 
-            // Initialize an action to receive the next message in the queue or end if cancelled.
-            receiveNext = async () =>
-            {
-                this.dynamicThrottling.WaitUntilAllowedParallelism(cancellationToken);
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    this.dynamicThrottling.NotifyWorkStarted();
-                    // Continue receiving and processing new messages until told to stop.
-                    await receiveMessage();
-                }
-            };
+                        return releaseTask;
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError("An unrecoverable error occurred while trying to receive a new message from subscription {1}:\r\n{0}", ex, this.subscription);
+                        this.dynamicThrottling.NotifyWorkCompletedWithError();
 
-            // Initialize a custom action acting as a callback whenever a non-transient exception occurs while receiving or processing messages.
-            recoverReceive = async (ex) =>
-            {
-                // Just log an exception. Do not allow an unhandled exception to terminate the message receive loop abnormally.
-                logger.LogError("An unrecoverable error occurred while trying to receive a new message from subscription {1}:\r\n{0}", ex, this.subscription);
-                this.dynamicThrottling.NotifyWorkCompletedWithError();
-
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    // Continue receiving and processing new messages until told to stop regardless of any exceptions.
-                    await TaskEx.Delay(10000).ContinueWith(t => receiveMessage.Invoke());
-                }
-            };
-
-            // Start receiving messages asynchronously.
-            await receiveNext();
+                        return Task.CompletedTask;
+                    };
+                });
         }
 
-        private async Task ReleaseMessage(Message msg, MessageReleaseAction releaseAction, long processingElapsedMilliseconds, long schedulingElapsedMilliseconds, Stopwatch roundtripStopwatch)
+        private Task HandleMessageException(ExceptionReceivedEventArgs args)
+        {
+            logger.LogError($"Message handler in subscription \"{subscription}\" encountered an exception: {args.Exception}");
+            return Task.CompletedTask;
+        }
+
+        private async Task ReleaseMessage(Message msg, MessageReleaseAction releaseAction, Stopwatch roundtripStopwatch)
         {
             switch (releaseAction.Kind)
             {
                 case MessageReleaseActionKind.Complete:
                     await msg.SafeCompleteAsync(
                         this.subscription,
-                        queue,
+                        client,
                         success =>
                         {
-                            //msg.Dispose();
-                            //this.instrumentation.MessageCompleted(success);
                             if (success)
                             {
                                 this.dynamicThrottling.NotifyWorkCompleted();
@@ -327,38 +245,28 @@ namespace AP.Infrastructure.Azure.Messaging
                             }
                         },
                         logger,
-                        processingElapsedMilliseconds,
-                        schedulingElapsedMilliseconds,
                         roundtripStopwatch);
                     break;
                 case MessageReleaseActionKind.Abandon:
                     await msg.SafeAbandonAsync(
                         this.subscription,
-                        queue,
+                        client,
                         success => {
-                            //msg.Dispose();
-                            //this.instrumentation.MessageCompleted(false);
                             dynamicThrottling.NotifyWorkCompletedWithError();
                         },
                         logger,
-                        processingElapsedMilliseconds,
-                        schedulingElapsedMilliseconds,
                         roundtripStopwatch);
                     break;
                 case MessageReleaseActionKind.DeadLetter:
                     await msg.SafeDeadLetterAsync(
                         this.subscription,
-                        queue,
+                        client,
                         releaseAction.DeadLetterReason,
                         releaseAction.DeadLetterDescription,
                         success => {
-                            //msg.Dispose(); 
-                            //this.instrumentation.MessageCompleted(false); 
                             this.dynamicThrottling.NotifyWorkCompletedWithError();
                         },
                         logger,
-                        processingElapsedMilliseconds,
-                        schedulingElapsedMilliseconds,
                         roundtripStopwatch);
                     break;
                 default:
