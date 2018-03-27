@@ -47,7 +47,7 @@
     <TableName>WorkshopMessageLog</TableName>
   </MessageLog>
   <BlobStorage>
-    <ConnectionString>DefaultEndpointsProtocol=https;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==</ConnectionString>
+    <ConnectionString>DefaultEndpointsProtocol=https;AccountName=simauto;AccountKey=wdZdpv94ov9BdHv2RvMOFnSIrqlAuWW5bY4qjgDg8ujRLWMrcMT4yVykR6NSTd9rbcYKjZhn0bV0ywfbmL19Sg==;EndpointSuffix=core.windows.net</ConnectionString>
     <!-- Container name in Windows Azure has restrictions: Only Lower-case Alphanumeric Characters and Dashes, 3 to 63 Characters, May Not Begin a Dash, May Not Contain Two Consecutive Dashes -->
     <RootContainerName>workshop-read-model</RootContainerName>
   </BlobStorage>

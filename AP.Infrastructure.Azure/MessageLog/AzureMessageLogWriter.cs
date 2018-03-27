@@ -41,12 +41,18 @@
                 {
                     context.ExecuteAsync(operation).Wait();
                 }
-                catch (StorageException se)
+                catch (Exception ex)
                 {
-                    // If we get a conflict, we ignore it as we've already saved the message, 
-                    // making this log idempotent.
-                    if (se.HResult != (int)HttpStatusCode.Conflict)
+                    var inner = ex as StorageException;
+                    if (inner == null)
+                    {
                         throw;
+                    }
+                    var httpCode = inner.RequestInformation.HttpStatusCode;
+                    if (httpCode != (int)HttpStatusCode.Conflict)
+                    {
+                        return;
+                    }
                 }
             });
         }

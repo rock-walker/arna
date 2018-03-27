@@ -15,6 +15,7 @@ namespace AP.Infrastructure.Azure.BlobStorage
         private readonly CloudStorageAccount account;
         private readonly string rootContainerName;
         private readonly CloudBlobClient blobClient;
+        private readonly CloudBlobContainer containerReference;
         private readonly RetryPolicy readRetryPolicy;
         private readonly RetryPolicy writeRetryPolicy;
         private readonly ILogger<CloudBlobStorage> logger;
@@ -42,7 +43,7 @@ namespace AP.Infrastructure.Azure.BlobStorage
             writeRetryPolicy = Policy.Handle<Exception>().WaitAndRetry(new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10)},
                 (ex, ts, countRetry, context) => logger.LogWarning("An error occurred in attempt number {1} to write to blob storage: {0}", ex.Message, countRetry)); /*Trace*/
 
-            var containerReference = blobClient.GetContainerReference(this.rootContainerName);
+            this.containerReference = blobClient.GetContainerReference(this.rootContainerName);
             writeRetryPolicy.Execute(() => containerReference.CreateIfNotExistsAsync());
         }
 
@@ -76,9 +77,6 @@ namespace AP.Infrastructure.Azure.BlobStorage
 
         public void Save(string id, string contentType, byte[] blob)
         {
-            var client = account.CreateCloudBlobClient();
-            var containerReference = client.GetContainerReference(rootContainerName);
-
             var blobReference = containerReference.GetBlockBlobReference(id);
 
             this.writeRetryPolicy.Execute(() =>

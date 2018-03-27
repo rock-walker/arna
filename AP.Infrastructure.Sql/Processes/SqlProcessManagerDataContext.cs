@@ -67,7 +67,7 @@
                 pm = this.retryPolicy.ExecuteAction(() => 
                     this.context.Set<T>().Where(predicate.And(x => x.Completed == false)).FirstOrDefault());
                     */
-                this.context.Set<T>().Where(predicate.And(x => x.Completed == false)).FirstOrDefault();
+                pm = this.context.Set<T>().Where(predicate.And(x => x.Completed == false)).FirstOrDefault();
             }
 
             if (pm == null)
@@ -75,7 +75,7 @@
                 pm = this.retryPolicy.ExecuteAction(() => 
                     this.context.Set<T>().Where(predicate).FirstOrDefault());
                     */
-                this.context.Set<T>().Where(predicate).FirstOrDefault();
+                pm = this.context.Set<T>().Where(predicate).FirstOrDefault();
             }
 
             if (pm != null)

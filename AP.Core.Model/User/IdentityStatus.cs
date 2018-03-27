@@ -1,4 +1,4 @@
-﻿namespace AP.ViewModel.Account
+﻿namespace AP.Core.Model
 {
     public enum IdentityStatus
     {

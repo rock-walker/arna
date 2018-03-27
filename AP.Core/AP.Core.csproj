@@ -23,6 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AP.Core.Model\AP.Core.Model.csproj" />
   </ItemGroup>
 

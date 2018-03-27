@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using AutoMapper;
     using AP.Infrastructure.EventSourcing;
     using AP.Business.Model.Registration;
     using AP.Business.Model.Registration.Events;
@@ -49,7 +48,6 @@
             base.Handles<OrderPartiallyReserved>(this.OnOrderPartiallyReserved);
             base.Handles<OrderReservationCompleted>(this.OnOrderReservationCompleted);
             base.Handles<OrderExpired>(this.OnOrderExpired);
-            base.Handles<OrderPaymentConfirmed>(e => this.OnOrderConfirmed(Mapper.Map<OrderConfirmed>(e)));
             base.Handles<OrderConfirmed>(this.OnOrderConfirmed);
             base.Handles<OrderRegistrantAssigned>(this.OnOrderRegistrantAssigned);
             base.Handles<OrderTotalsCalculated>(this.OnOrderTotalsCalculated);

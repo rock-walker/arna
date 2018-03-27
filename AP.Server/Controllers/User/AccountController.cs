@@ -13,6 +13,9 @@ using AP.Core.Extensions.Attributes;
 using AP.Core.Model.User;
 using AP.Shared.Sender.Contracts;
 using AP.ViewModel.Account.Manage;
+using AP.Core.Model;
+using AP.Shared.Security.Contracts;
+using AutoMapper;
 
 namespace WebApplication6.Controllers
 {
@@ -25,6 +28,7 @@ namespace WebApplication6.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
+        private readonly IIdentityProvider _identity;
         private readonly string _externalCookieScheme;
 
         public AccountController(
@@ -33,6 +37,7 @@ namespace WebApplication6.Controllers
             IOptions<IdentityCookieOptions> identityCookieOptions,
             IEmailSender emailSender,
             ISmsSender smsSender,
+            IIdentityProvider identity,
             ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
@@ -41,56 +46,31 @@ namespace WebApplication6.Controllers
             _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
+            _identity = identity;
         }
 
-        //
-        // GET: /Account/Login
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(string returnUrl = null)
+        public async Task<string> Login(string returnUrl = null)
         {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
 
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            return "Please enter your credentials to login";
         }
 
-        //
-        // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        public async Task<AccountApiResult> Login([FromBody]LoginViewModel model)
+        public async Task<IdentityStatus> Login([FromBody]LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation(1, "User logged in.");
-                    return AccountApiResult.LoggedInSuccess;
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return AccountApiResult.TwoFactorRequiresError;
-                    //return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning(2, "User account locked out.");
-                    return AccountApiResult.LockedOutPassordError;
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return AccountApiResult.Error;
-                }
+                var loginInfo = Mapper.Map<LoginInfo>(model);
+                var userStatus = await _identity.Login(loginInfo);
+                return userStatus.Item2;
             }
 
-            // If we got this far, something failed, redisplay form
-            return AccountApiResult.Error;
+            return IdentityStatus.Error;
         }
 
         //
@@ -107,7 +87,7 @@ namespace WebApplication6.Controllers
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-        public async Task<AccountApiResult> RegisterByEmail(RegisterViewModel model)
+        public async Task<IdentityStatus> RegisterByEmail(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -124,12 +104,12 @@ namespace WebApplication6.Controllers
                     // Comment out following line to prevent a new user automatically logged on.
                     // await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation(3, "User created a new account with password.");
-                    return AccountApiResult.AddLoginSuccess;
+                    return IdentityStatus.AddLoginSuccess;
                 }
                 AddErrors(result);
             }
 
-            return AccountApiResult.Error;
+            return IdentityStatus.Error;
         }
 
         //
@@ -175,11 +155,11 @@ namespace WebApplication6.Controllers
         // POST: /Account/VerifyPhoneNumber
         [HttpPost]
         [AllowAnonymous]
-        public async Task<AccountApiResult> VerifyPhoneNumber([FromBody]VerifyPhoneNumberViewModel model)
+        public async Task<IdentityStatus> VerifyPhoneNumber([FromBody]VerifyPhoneNumberViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return AccountApiResult.Error;
+                return IdentityStatus.Error;
             }
             var user = await _userManager.FindByIdAsync(model.UserId.ToString());
             if (user != null)
@@ -188,12 +168,12 @@ namespace WebApplication6.Controllers
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return AccountApiResult.AddPhoneSuccess;
+                    return IdentityStatus.AddPhoneSuccess;
                 }
             }
             // If we got this far, something failed, redisplay the form
             ModelState.AddModelError(string.Empty, "Failed to verify phone number");
-            return AccountApiResult.Error;
+            return IdentityStatus.Error;
         }
 
         //

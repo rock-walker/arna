@@ -24,7 +24,11 @@ namespace AP.Server.Controllers
             if (!string.IsNullOrEmpty(slug))
             {
                 Workshop = filterService.FindBySlug(slug);
-
+                if (Workshop == null)
+                {
+                    filterContext.Result = new UnauthorizedResult();
+                }
+                /*
                 if (Workshop != null)
                 {
                     var accessCode = (string)ControllerContext.RouteData.Values["accessCode"];
@@ -34,6 +38,7 @@ namespace AP.Server.Controllers
                         filterContext.Result = new UnauthorizedResult();
                     }
                 }
+                */
             }
 
             base.OnActionExecuting(filterContext);

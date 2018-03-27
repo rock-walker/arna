@@ -61,11 +61,11 @@
                     handler(this, EventArgs.Empty);
                 }
 
-                logger.LogWarning("An error occurred in attempt number {1} to access table storage (PendingEventsQueue): {0}", ex.Message, countRetry);
+                logger.LogWarning($"An error occurred in attempt number {countRetry} to access table storage (PendingEventsQueue): {ex.Message}");
             });
 
             eventStoreRetryPolicy = Policy.Handle<Exception>().WaitAndRetry(blockingRetryStrategy, (ex, ts, countRetry, context) => {
-                logger.LogWarning("An error occurred in attempt number {1} to access table storage (EventStore): {0}", ex.Message, countRetry);
+                logger.LogWarning($"An error occurred in attempt number {countRetry} to access table storage (EventStore): {ex.Message}");
             });
 
             /*
@@ -119,20 +119,33 @@
                 batchOperation.Insert(dbDuplicateEntity);
             }
 
+            if (!batchOperation.Any())
+            {
+                logger.LogWarning($"DB Storage batch is empty for partitionKey {partitionKey}, nothing to save!");
+                return;
+            }
+
             try
             {
                 eventStoreRetryPolicy.Execute(() => tableRef.ExecuteBatchAsync(batchOperation).Result);
             }
-            catch (StorageException ex)
+            catch (Exception ex)
             {
-                //var inner = ex.InnerException as //DataServiceClientException;
-                var inner = ex.HResult;
-                if (inner == (int)HttpStatusCode.Conflict)
+                var inner = ex.InnerException as StorageException;
+                if (inner == null)
                 {
-                    throw new ConcurrencyException();
+                    throw;
                 }
 
-                throw;
+                var hResult = inner.RequestInformation.HttpStatusCode;
+
+                if (hResult == (int)HttpStatusCode.Conflict)
+                {
+                    //throw new ConcurrencyException();
+                    return;
+                }
+
+                throw new ConcurrencyException();
             }
         }
 

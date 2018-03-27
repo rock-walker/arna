@@ -18,7 +18,7 @@
         IEventHandler<OrderPlaced>, IEventHandler<OrderUpdated>,
         IEventHandler<OrderPartiallyReserved>, IEventHandler<OrderReservationCompleted>,
         IEventHandler<OrderRegistrantAssigned>,
-        IEventHandler<OrderConfirmed>, IEventHandler<OrderPaymentConfirmed>
+        IEventHandler<OrderConfirmed>
     {
         private readonly IDbContextScopeFactory factory;
         private readonly ILogger<DraftOrderViewModelGenerator> logger;
@@ -93,11 +93,6 @@
         public void Handle(OrderReservationCompleted @event)
         {
             this.UpdateReserved(@event.SourceId, @event.ReservationExpiration, DraftOrder.States.ReservationCompleted, @event.Version, @event.Anchors);
-        }
-
-        public void Handle(OrderPaymentConfirmed @event)
-        {
-            this.Handle(Mapper.Map<OrderConfirmed>(@event));
         }
 
         public void Handle(OrderConfirmed @event)

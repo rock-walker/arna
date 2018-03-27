@@ -4,11 +4,9 @@
     using AP.Business.Registration.Commands;
     using AP.Infrastructure.EventSourcing;
     using AP.Infrastructure.Messaging.Handling;
-    using AutoMapper;
 
     public class AnchorAssignmentsHandler :
         IEventHandler<OrderConfirmed>,
-        IEventHandler<OrderPaymentConfirmed>,
         ICommandHandler<UnassignAnchor>,
         ICommandHandler<AssignAnchor>
     {
@@ -21,11 +19,6 @@
             this.assignmentsRepo = assignmentsRepo;
         }
 
-        public void Handle(OrderPaymentConfirmed @event)
-        {
-            this.Handle(Mapper.Map<OrderConfirmed>(@event));
-        }
-
         public void Handle(OrderConfirmed @event)
         {
             var order = this.ordersRepo.Get(@event.SourceId);
@@ -36,7 +29,7 @@
         public void Handle(AssignAnchor command)
         {
             var assignments = this.assignmentsRepo.Get(command.SeatAssignmentsId);
-            assignments.AssignSeat(command.Position, command.Attendee);
+            assignments.AssignAnchor(command.Position, command.Attendee);
             assignmentsRepo.Save(assignments, command.Id.ToString());
         }
 

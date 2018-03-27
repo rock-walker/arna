@@ -1,17 +1,4 @@
-﻿// ==============================================================================================================
-// Microsoft patterns & practices
-// CQRS Journey project
-// ==============================================================================================================
-// ©2012 Microsoft. All rights reserved. Certain content used with permission from contributors
-// http://go.microsoft.com/fwlink/p/?LinkID=258575
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance 
-// with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-// Unless required by applicable law or agreed to in writing, software distributed under the License is 
-// distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-// See the License for the specific language governing permissions and limitations under the License.
-// ==============================================================================================================
-
-namespace AP.Business.Registration
+﻿namespace AP.Business.Registration
 {
     using System;
     using System.Collections.Generic;
@@ -26,13 +13,13 @@ namespace AP.Business.Registration
     /// Entity used to represent anchors asignments.
     /// </summary>
     /// <remarks>
-    /// In our current business logic, 1 seats assignments instance corresponds to 1 <see cref="Order"/> instance. 
+    /// In our current business logic, 1 anchors assignments instance corresponds to 1 <see cref="Order"/> instance. 
     /// This does not need to be the case in the future.
     /// <para>For more information on the domain, see <see cref="http://go.microsoft.com/fwlink/p/?LinkID=258553">Journey chapter 3</see>.</para>
     /// </remarks>
     public class AnchorAssignments : EventSourced
     {
-        private class AnchorAssignment
+        public class AnchorAssignment
         {
             public AnchorAssignment()
             {
@@ -47,31 +34,24 @@ namespace AP.Business.Registration
         }
 
         private Dictionary<int, AnchorAssignment> anchors = new Dictionary<int, AnchorAssignment>();
-        /*
-        static AnchorAssignments()
-        {
-            Mapper.Initialize(cfg => cfg.CreateMap<AnchorAssigned, AnchorAssignments>());
-            Mapper.Initialize(cfg => cfg.CreateMap<AnchorUnassigned, AnchorAssignments>());
-            Mapper.Initialize(cfg => cfg.CreateMap<AnchorAssignmentUpdated, AnchorAssignments>());
-        }
-        */
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SeatAssignments"/> class.
         /// </summary>
-        /// <param name="orderId">The order id that triggers this seat assignments creation.</param>
-        /// <param name="seats">The order seats.</param>
-        public AnchorAssignments(Guid orderId, IEnumerable<AnchorQuantity> seats)
+        /// <param name="orderId">The order id that triggers this anchor assignments creation.</param>
+        /// <param name="anchors">The order anchors.</param>
+        public AnchorAssignments(Guid orderId, IEnumerable<AnchorQuantity> anchors)
             // Note that we don't use the order id as the assignments id
             : this(GuidUtil.NewSequentialId())
         {
-            // Add as many assignments as seats there are.
+            // Add as many assignments as anchors there are.
             var i = 0;
             var all = new List<AnchorAssignmentsCreated.AnchorAssignmentInfo>();
-            foreach (var seatQuantity in seats)
+            foreach (var anchorQuantity in anchors)
             {
-                for (int j = 0; j < seatQuantity.Quantity; j++)
+                for (int j = 0; j < anchorQuantity.Quantity; j++)
                 {
-                    all.Add(new AnchorAssignmentsCreated.AnchorAssignmentInfo { Position = i++, SeatType = seatQuantity.AnchorType });
+                    all.Add(new AnchorAssignmentsCreated.AnchorAssignmentInfo { Position = i++, SeatType = anchorQuantity.AnchorType });
                 }
             }
 
@@ -88,12 +68,12 @@ namespace AP.Business.Registration
             : base(id)
         {
             base.Handles<AnchorAssignmentsCreated>(this.OnCreated);
-            base.Handles<AnchorAssigned>(this.OnSeatAssigned);
-            base.Handles<AnchorUnassigned>(this.OnSeatUnassigned);
-            base.Handles<AnchorAssignmentUpdated>(this.OnSeatAssignmentUpdated);
+            base.Handles<AnchorAssigned>(this.OnAnchorAssigned);
+            base.Handles<AnchorUnassigned>(this.OnAnchorUnassigned);
+            base.Handles<AnchorAssignmentUpdated>(this.OnAnchorAssignmentUpdated);
         }
 
-        public void AssignSeat(int position, PersonalInfo attendee)
+        public void AssignAnchor(int position, PersonalInfo attendee)
         {
             if (string.IsNullOrEmpty(attendee.Email))
                 throw new ArgumentNullException("attendee.Email");
@@ -144,17 +124,17 @@ namespace AP.Business.Registration
             this.anchors = e.Anchors.ToDictionary(x => x.Position, x => new AnchorAssignment { Position = x.Position, AnchorType = x.SeatType });
         }
 
-        private void OnSeatAssigned(AnchorAssigned e)
+        private void OnAnchorAssigned(AnchorAssigned e)
         {
             this.anchors[e.Position] = Mapper.Map(e, new AnchorAssignment());
         }
 
-        private void OnSeatUnassigned(AnchorUnassigned e)
+        private void OnAnchorUnassigned(AnchorUnassigned e)
         {
             this.anchors[e.Position] = Mapper.Map(e, new AnchorAssignment { AnchorType = this.anchors[e.Position].AnchorType });
         }
 
-        private void OnSeatAssignmentUpdated(AnchorAssignmentUpdated e)
+        private void OnAnchorAssignmentUpdated(AnchorAssignmentUpdated e)
         {
             this.anchors[e.Position] = Mapper.Map(e, new AnchorAssignment
             {
