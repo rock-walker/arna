@@ -13,13 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="User\Providers\ProjectMembershipProvider.cs" />
-    <Compile Remove="User\Providers\ProjectRoleProvider.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="User\Principal\" />
-    <Folder Include="User\Providers\" />
+    <Compile Remove="User\Authentication\RefreshTokenProviderMiddleware.cs" />
+    <Compile Remove="User\Authentication\TokenProviderMiddleware.cs" />
+    <Compile Remove="User\Authentication\TokenProviderOptions.cs" />
   </ItemGroup>
 
   <ItemGroup>

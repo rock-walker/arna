@@ -16,6 +16,7 @@ using AP.ViewModel.Account.Manage;
 using AP.Core.Model;
 using AP.Shared.Security.Contracts;
 using AutoMapper;
+using System.Security.Principal;
 
 namespace WebApplication6.Controllers
 {
@@ -30,6 +31,8 @@ namespace WebApplication6.Controllers
         private readonly ILogger _logger;
         private readonly IIdentityProvider _identity;
         private readonly string _externalCookieScheme;
+
+        private IIdentity LoggedInUser => User.Identity;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -66,25 +69,32 @@ namespace WebApplication6.Controllers
             if (ModelState.IsValid)
             {
                 var loginInfo = Mapper.Map<LoginInfo>(model);
-                var userStatus = await _identity.Login(loginInfo);
-                return userStatus.Item2;
+                return await _identity.SignIn(loginInfo);
             }
 
-            return IdentityStatus.Error;
+            return IdentityStatus.InvalidRequestBody;
         }
 
-        //
-        // GET: /Account/Register
-        [HttpGet]
+        [HttpPost]
         [AllowAnonymous]
-        public IActionResult Register(string returnUrl = null)
+        public StatusCodeResult Token([FromBody] LoginViewModel model)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            if (ModelState.IsValid)
+            {
+                var loginInfo = Mapper.Map<LoginInfo>(model);
+                return Ok();
+            }
+
+            return NotFound();
         }
 
-        //
-        // POST: /Account/Register
+        [HttpPost]
+        [AllowAnonymous]
+        public StatusCodeResult RefreshToken([FromBody] RefreshToken model)
+        {
+            return Ok();
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IdentityStatus> RegisterByEmail(RegisterViewModel model)

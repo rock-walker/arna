@@ -12,6 +12,7 @@
         RemovePhoneSuccess,
         TwoFactorRequiresError,
         LockedOutPassordError,
-        Error
+        Error,
+        InvalidRequestBody
     }
 }

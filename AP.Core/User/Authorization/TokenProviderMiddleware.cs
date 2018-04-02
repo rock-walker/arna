@@ -8,13 +8,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using AP.Core.Model.User;
 using System.Linq;
+using AP.Core.User.Authentication;
 
-namespace AP.Core.User.Authentication
+namespace AP.Core.User.Authorization
 {
     public class TokenProviderMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly TokenProviderOptions _options;
+        private readonly TokenProviderOptions options;
         private readonly JsonSerializerSettings _serializerSettings;
 
         public TokenProviderMiddleware(
@@ -23,8 +24,8 @@ namespace AP.Core.User.Authentication
         {
             _next = next;
 
-            _options = options.Value;
-            ThrowIfInvalidOptions(_options);
+            this.options = options.Value;
+            ThrowIfInvalidOptions(this.options);
 
             _serializerSettings = new JsonSerializerSettings
             {
@@ -34,7 +35,7 @@ namespace AP.Core.User.Authentication
 
         public Task Invoke(HttpContext context)
         {
-            if (!context.Request.Path.Equals(_options.Path, StringComparison.Ordinal))
+            if (!context.Request.Path.Equals(options.Path, StringComparison.Ordinal))
             {
                 return _next(context);
             }
@@ -66,7 +67,7 @@ namespace AP.Core.User.Authentication
                 return;
             }
 
-            var identity = await _options.IdentityResolver(loginModel);
+            var identity = await options.IdentityResolver(loginModel);
             if (identity == null || identity.User == null)
             {
                 context.Response.StatusCode = 400;
@@ -74,45 +75,10 @@ namespace AP.Core.User.Authentication
                 return;
             }
 
-            var now = System.DateTime.UtcNow;
-
-            // Specifically add the jti (nonce), iat (issued timestamp), and sub (subject/user) claims.
-            var basicClaims = new Claim[]
-            {
-                new Claim(JwtRegisteredClaimNames.Email, identity.User.Email),
-                new Claim(JwtRegisteredClaimNames.Sub, loginModel.User),
-                new Claim(JwtRegisteredClaimNames.Jti, _options.NonceGenerator()),
-                new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUniversalTime().ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-            };
-
-            var claims = basicClaims;
-            if (identity.Roles != null && identity.Roles.Any())
-            {
-                var roleClaims = identity.Roles.Select(x => new Claim(ClaimTypes.Role, x)).ToArray();
-                claims = basicClaims.Concat(roleClaims).ToArray();
-            }
-
-            // Create the JWT and write it to a string
-            var jwt = new JwtSecurityToken(
-                issuer: _options.Issuer,
-                audience: _options.Audience,
-                claims: claims,
-                notBefore: now,
-                expires: now.Add(_options.Expiration),
-                signingCredentials: _options.SigningCredentials);
-            
-            var jwtTokenHandler = new JwtSecurityTokenHandler();
-            //jwtTokenHandler.InboundClaimTypeMap.Clear();
-
-            var encodedJwt = jwtTokenHandler.WriteToken(jwt);
-            var response = new
-            {
-                access_token = encodedJwt,
-                expires_in = (int)_options.Expiration.TotalSeconds
-            };
+            var token = JwtTokenProducer.Produce(identity, options);
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(response, _serializerSettings));
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(token, _serializerSettings));
         }
 
         private static void ThrowIfInvalidOptions(TokenProviderOptions options)

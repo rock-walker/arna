@@ -67,7 +67,8 @@ namespace AP.Server
                 {
                     auth.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
                         .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-                        .RequireAuthenticatedUser().Build()
+                        .RequireAuthenticatedUser()
+                        .Build()
                     );
                 });
 

@@ -73,7 +73,8 @@ namespace AP.Server.Application
             services.AddScoped<IOrderDao, OrderDao>();
             services.AddSingleton<IWorkshopDao, CachingWorkshopDao>();
             services.AddSingleton<IWorkshopDao, WorkshopDao>();
-            services.AddSingleton<IIdentityProvider, IdentityProvider>();
+            services.AddScoped<IIdentityProvider, IdentityProvider>();
+            services.AddScoped<IIdentityService, IdentityService>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
@@ -91,6 +92,7 @@ namespace AP.Server.Application
             services.AddScoped<IWorkshopFilterRepository, WorkshopFilterRepository>();
             services.AddScoped<IAutobrandRepository, AutobrandRepository>();
             services.AddScoped<IAttendeeAccountRepository, AttendeeAccountRepository>();
+            services.AddScoped<IIdentityRepository, IdentityRepository>();
             services.AddSingleton<IOrderRepository, OrderRepository>();
         }
 

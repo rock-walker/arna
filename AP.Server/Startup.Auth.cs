@@ -1,5 +1,5 @@
 ﻿using AP.Core.Model.User;
-using AP.Core.User.Authentication;
+using AP.Core.User.Authorization;
 using AP.Repository.Context;
 using AP.Shared.Security.Contracts;
 using Microsoft.AspNetCore.Builder;
@@ -8,9 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,10 +26,12 @@ namespace AP.Server
             var tokenProviderOptions = new TokenProviderOptions
             {
                 Path = Configuration.GetSection("TokenAuthentication:TokenPath").Value,
+                RefreshTokenPath = Configuration.GetSection("TokenAuthentication:RefreshTokenPath").Value,
                 Audience = Configuration.GetSection("TokenAuthentication:Audience").Value,
                 Issuer = Configuration.GetSection("TokenAuthentication:Issuer").Value,
                 SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
-                IdentityResolver = GetIdentity
+                IdentityResolver = GetIdentity,
+                RefreshTokenResolver = GetRefreshToken
             };
 
             var tokenValidationParameters = new TokenValidationParameters
@@ -72,23 +72,30 @@ namespace AP.Server
 
             app.UseJwtBearerAuthentication(jwtOptions);
 
-            app.UseMiddleware<TokenProviderMiddleware>(Options.Create(tokenProviderOptions));
+            var tokenOptions = Options.Create(tokenProviderOptions);
+            app.UseMiddleware<TokenProviderMiddleware>(tokenOptions);
+            app.UseMiddleware<RefreshTokenProviderMiddleware>(tokenOptions);
+
             identityProvider = app.ApplicationServices.GetService<IIdentityProvider>();
         }
 
-        private async Task<JwtUser> GetIdentity(LoginInfo info)
+        private async Task<JwtIdentity> GetIdentity(LoginInfo info)
         {
-            var loginStatus = await identityProvider.Login(info);
-            if (loginStatus.Item2 == Core.Model.IdentityStatus.LoggedInSuccess)
+            var identity = await identityProvider.OauthSignIn(info);
+            if (identity.LoggedInStatus == Core.Model.IdentityStatus.LoggedInSuccess)
             {
-                return new JwtUser
-                {
-                    User = loginStatus.Item1,
-                    Roles = loginStatus.Item3
-                };
+                var token = identityProvider.GenerateRefreshToken(identity);
+                identity.RefreshToken = token;
+                return identity;
             }
 
             return null;
+        }
+
+        private async Task<JwtIdentity> GetRefreshToken(string token)
+        {
+            return await identityProvider.GetRefreshToken(token);
+
         }
 
         private void ConfigureIdentity(IServiceCollection services)
