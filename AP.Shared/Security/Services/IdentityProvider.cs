@@ -148,5 +148,18 @@ namespace AP.Shared.Security.Services
 
             return jwtIdentity;
         }
+
+        public async Task<JwtIdentity> ProvideOauthWorkflow(LoginInfo info)
+        {
+            var identity = await OauthSignIn(info);
+            if (identity.LoggedInStatus == IdentityStatus.LoggedInSuccess)
+            {
+                var token = GenerateRefreshToken(identity);
+                identity.RefreshToken = token;
+                return identity;
+            }
+
+            return null;
+        }
     }
 }

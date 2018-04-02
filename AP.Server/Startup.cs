@@ -33,6 +33,13 @@ namespace AP.Server
                     .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                     .AddEnvironmentVariables()
                     .AddUserSecrets<Startup>();
+                    // Add the EF configuration provider, which will override any
+                    // config made with the JSON provider.
+                    /*
+                    .AddEntityFrameworkConfig(options =>
+                        options.UseSqlServer(connectionStringConfig.GetConnectionString(
+                        "DefaultConnection"))
+                    )*/
 
                 Configuration = builder.Build();
                 this.loggerFactory = loggerFactory;

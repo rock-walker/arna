@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using AP.Core.Model.User;
 using System.Security;
+using System.Security.Claims;
+using System.Collections.Generic;
 
 namespace AP.Server.Controllers
 {
-    [Route("api/[controller]")]
     public class IdentityController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
+        private IEnumerable<Claim> Claims => User.Claims;
 
         public IdentityController(UserManager<ApplicationUser> userManager)
         {
@@ -18,7 +20,8 @@ namespace AP.Server.Controllers
 
         protected async Task<ApplicationUser> GetCurrentUser()
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
+            var email = User.FindFirst(ClaimTypes.Email).Value;
+            var user = await userManager.FindByEmailAsync(email);
 
             if (user == null)
             {

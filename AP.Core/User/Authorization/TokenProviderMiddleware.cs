@@ -2,32 +2,29 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using AP.Core.Model.User;
-using System.Linq;
 using AP.Core.User.Authentication;
 
 namespace AP.Core.User.Authorization
 {
     public class TokenProviderMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly RequestDelegate next;
         private readonly TokenProviderOptions options;
-        private readonly JsonSerializerSettings _serializerSettings;
+        private readonly JsonSerializerSettings serializerSettings;
 
         public TokenProviderMiddleware(
             RequestDelegate next,
             IOptions<TokenProviderOptions> options)
         {
-            _next = next;
+            this.next = next;
 
             this.options = options.Value;
             ThrowIfInvalidOptions(this.options);
 
-            _serializerSettings = new JsonSerializerSettings
+            serializerSettings = new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented
             };
@@ -37,7 +34,7 @@ namespace AP.Core.User.Authorization
         {
             if (!context.Request.Path.Equals(options.Path, StringComparison.Ordinal))
             {
-                return _next(context);
+                return next(context);
             }
 
             if (!context.Request.Method.Equals("POST"))
@@ -78,7 +75,7 @@ namespace AP.Core.User.Authorization
             var token = JwtTokenProducer.Produce(identity, options);
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(token, _serializerSettings));
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(token, serializerSettings));
         }
 
         private static void ThrowIfInvalidOptions(TokenProviderOptions options)

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using AP.ViewModel.Account;
-using AP.Core.Extensions.Attributes;
 using AP.Core.Model.User;
 using AP.Shared.Sender.Contracts;
 using AP.ViewModel.Account.Manage;
@@ -30,6 +29,8 @@ namespace WebApplication6.Controllers
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
         private readonly IIdentityProvider _identity;
+        private readonly IAccountService accountService;
+
         private readonly string _externalCookieScheme;
 
         private IIdentity LoggedInUser => User.Identity;
@@ -41,6 +42,7 @@ namespace WebApplication6.Controllers
             IEmailSender emailSender,
             ISmsSender smsSender,
             IIdentityProvider identity,
+            IAccountService accountService,
             ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
@@ -50,6 +52,7 @@ namespace WebApplication6.Controllers
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
             _identity = identity;
+            this.accountService = accountService;
         }
 
         [HttpGet]
@@ -122,17 +125,10 @@ namespace WebApplication6.Controllers
             return IdentityStatus.Error;
         }
 
-        //
-        // POST: /Account/RegisterByPhoneNumber
         [HttpPost]
         [AllowAnonymous]
         public async Task<VerifyPhoneNumberViewModel> RegisterByPhoneNumber([FromBody]RegisterMobileViewModel model)
         {
-            if (!Enum.IsDefined(typeof(Roles), model.Role))
-            {
-                return null;
-            }
-
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser
@@ -145,9 +141,8 @@ namespace WebApplication6.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    var role = (Roles)model.Role;
-
-                    await _userManager.AddToRoleAsync(user, role.GetValue());
+                    //var role = Roles.Verified;
+                    //await _userManager.AddToRoleAsync(user, role.GetValue());
                     var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Phone);
                     await _smsSender.SendSmsAsync(model.Phone, "Your security code is: " + code);
                     return new VerifyPhoneNumberViewModel
@@ -161,29 +156,33 @@ namespace WebApplication6.Controllers
             return null;
         }
 
-        //
-        // POST: /Account/VerifyPhoneNumber
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IdentityStatus> VerifyPhoneNumber([FromBody]VerifyPhoneNumberViewModel model)
+        public async Task<JwtResponse> VerifyPhoneNumber([FromBody]VerifyPhoneNumberViewModel model)
         {
+            var jwt = new JwtResponse
+            {
+                Status = IdentityStatus.Error
+            };
+
             if (!ModelState.IsValid)
             {
-                return IdentityStatus.Error;
+                jwt.Message = "Invalid JSON model";
+                return jwt;
             }
-            var user = await _userManager.FindByIdAsync(model.UserId.ToString());
+            var user = await accountService.FindUserById(model.UserId.ToString());
             if (user != null)
             {
-                var result = await _userManager.ChangePhoneNumberAsync(user, model.Phone, model.Code);
-                if (result.Succeeded)
+                var jwtResponse = await accountService.CompleteUserVerification(user, model.Phone, model.Code);
+                if (jwtResponse != null)
                 {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return IdentityStatus.AddPhoneSuccess;
+                    jwtResponse.Status = IdentityStatus.AddPhoneSuccess;
+                    return jwtResponse;
                 }
             }
-            // If we got this far, something failed, redisplay the form
-            ModelState.AddModelError(string.Empty, "Failed to verify phone number");
-            return IdentityStatus.Error;
+
+            jwt.Message = "Failed to verify phone number";
+            return jwt;
         }
 
         //

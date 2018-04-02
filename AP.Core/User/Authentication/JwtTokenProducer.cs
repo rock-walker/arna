@@ -1,15 +1,18 @@
 ﻿using AP.Core.Model.User;
 using AP.Core.User.Authorization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 
 namespace AP.Core.User.Authentication
 {
     public class JwtTokenProducer
     {
-        public static object Produce(JwtIdentity identity, TokenProviderOptions options)
+        public static JwtResponse Produce(JwtIdentity identity, TokenProviderOptions options)
         {
             var now = System.DateTime.UtcNow;
 
@@ -48,14 +51,30 @@ namespace AP.Core.User.Authentication
                 return null;
             }
 
-            var response = new
+            var response = new JwtResponse
             {
-                access_token = encodedJwt,
-                expires_in = (int)options.Expiration.TotalSeconds,
-                refresh_token = identity.RefreshToken.Token
+                AccessToken = encodedJwt,
+                ExpiresIn = (int)options.Expiration.TotalSeconds,
+                RefreshToken = identity.RefreshToken.Token
             };
 
             return response;
+        }
+
+        public static TokenProviderOptions InitializeOptions(IConfigurationRoot config)
+        {
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(config.GetSection("TokenAuthentication:SecretKey").Value));
+
+            var tokenProviderOptions = new TokenProviderOptions
+            {
+                Path = config.GetSection("TokenAuthentication:TokenPath").Value,
+                RefreshTokenPath = config.GetSection("TokenAuthentication:RefreshTokenPath").Value,
+                Audience = config.GetSection("TokenAuthentication:Audience").Value,
+                Issuer = config.GetSection("TokenAuthentication:Issuer").Value,
+                SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
+            };
+
+            return tokenProviderOptions;
         }
     }
 }

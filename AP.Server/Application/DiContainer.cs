@@ -52,6 +52,7 @@ namespace AP.Server.Application
             var repositoryType = repositoryAssembly.GetType("AP.Repository.Application.Contracts.IContainerRegister");
             var repositoryRegistrator = Activator.CreateInstance(repositoryType);
             */
+            services.AddSingleton(configuration);
             RegisterControllers(services);
             RegisterRepositories(services);
             RegisterDbContexts(services, configuration);
@@ -75,6 +76,7 @@ namespace AP.Server.Application
             services.AddSingleton<IWorkshopDao, WorkshopDao>();
             services.AddScoped<IIdentityProvider, IdentityProvider>();
             services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IAccountService, AccountService>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)

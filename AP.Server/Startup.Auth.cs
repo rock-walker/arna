@@ -81,15 +81,7 @@ namespace AP.Server
 
         private async Task<JwtIdentity> GetIdentity(LoginInfo info)
         {
-            var identity = await identityProvider.OauthSignIn(info);
-            if (identity.LoggedInStatus == Core.Model.IdentityStatus.LoggedInSuccess)
-            {
-                var token = identityProvider.GenerateRefreshToken(identity);
-                identity.RefreshToken = token;
-                return identity;
-            }
-
-            return null;
+            return await identityProvider.ProvideOauthWorkflow(info);
         }
 
         private async Task<JwtIdentity> GetRefreshToken(string token)

@@ -1,9 +1,12 @@
-﻿using AP.EntityModel.AttendeeDomain;
+﻿using AP.Core.Model.User;
+using AP.EntityModel.AttendeeDomain;
 using AP.Repository.Attendee.Contracts;
+using AP.Shared.Security.Contracts;
 using AP.ViewModel.Attendee;
 using AutoMapper;
 using EntityFramework.DbContextScope.Interfaces;
 using System;
+using System.Threading.Tasks;
 
 namespace AP.Business.Attendee
 {
@@ -11,17 +14,21 @@ namespace AP.Business.Attendee
     {
         private readonly IAttendeeAccountRepository attendeeRepository;
         private readonly IDbContextScopeFactory contextScope;
+        private readonly IAccountService accountService;
 
-        public AttendeeAccountService(IAttendeeAccountRepository attendeeRepository, IDbContextScopeFactory contextScope)
+        public AttendeeAccountService(IAttendeeAccountRepository attendeeRepository, 
+            IDbContextScopeFactory contextScope,
+            IAccountService accountService)
         {
             this.attendeeRepository = attendeeRepository;
             this.contextScope = contextScope;
+            this.accountService = accountService;
         }
 
-        public Guid Register(AttendeeAccountViewModel viewModel, Guid userId)
+        public async Task<Guid> Register(AttendeeAccountViewModel viewModel, ApplicationUser user)
         {
             var data = Mapper.Map<AttendeeData>(viewModel);
-            data.UserID = userId;
+            data.UserID = user.Id;
             Guid attendeeId;
 
             using (var scope = contextScope.Create())
@@ -30,6 +37,7 @@ namespace AP.Business.Attendee
                 scope.SaveChanges();
             }
 
+            await accountService.AddRole(user, Roles.Client);
             return attendeeId;
         }
 

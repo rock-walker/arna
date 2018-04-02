@@ -11,5 +11,6 @@ namespace AP.Shared.Security.Contracts
         Task<JwtIdentity> GetRefreshToken(string verifyRefreshToken);
         RefreshToken GenerateRefreshToken(JwtIdentity info);
         void RevokeAccessToken(string token);
+        Task<JwtIdentity> ProvideOauthWorkflow(LoginInfo info);
     }
 }

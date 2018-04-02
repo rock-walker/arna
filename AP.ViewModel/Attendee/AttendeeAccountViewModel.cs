@@ -1,11 +1,10 @@
-﻿using System;
+﻿using AP.ViewModel.Account;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace AP.ViewModel.Attendee
 {
-    public class AttendeeAccountViewModel
+    public class AttendeeAccountViewModel : IdentityViewModel
     {
         [StringLength(64)]
         public string FirstName { get; set; }
