@@ -1,5 +1,4 @@
 ﻿using AP.Business.Registration;
-using AP.Business.Registration.Handlers;
 using AP.Infrastructure;
 using AP.Infrastructure.BlobStorage;
 using AP.Infrastructure.Messaging;
@@ -10,7 +9,6 @@ using AP.Infrastructure.Sql.MessageLog;
 using AP.Infrastructure.Sql.Messaging;
 using AP.Infrastructure.Sql.Messaging.Handling;
 using AP.Infrastructure.Sql.Messaging.Implementation;
-using AP.Registration.Handlers;
 using EntityFramework.DbContextScope.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,23 +16,11 @@ using System.Collections.Generic;
 
 namespace AP.Server.Application
 {
-    public class BookingContainer
+    partial class BookingContainer
     {
         private static string _localConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=autoportaldb;Integrated Security=True";
 
-        public static void SetupBookingHandlers(IServiceCollection services)
-        {
-            services.AddScoped<ICommandHandler, RegistrationProcessManagerRouter>();
-            services.AddScoped<ICommandHandler, OrderCommandHandler>();
-            services.AddScoped<ICommandHandler, AnchorsAvailabilityHandler>();
-            //services.AddScoped<ICommandHandler, ThirdPartyProcessorPaymentCommandHandler>("ThirdPartyProcessorPaymentCommandHandler");
-            services.AddScoped<ICommandHandler, AnchorAssignmentsHandler>();
-
-            // Conference management integration
-            //container.RegisterType<global::Conference.ConferenceContext>(new TransientLifetimeManager(), new InjectionConstructor("ConferenceManagement"));
-        }
-
-        public static void OnCreateContainer(IServiceCollection services)
+        public void OnCreateContainer1(IServiceCollection services)
         {
             var serializer = new JsonTextSerializer();
             services.AddSingleton<ITextSerializer>(serializer);

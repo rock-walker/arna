@@ -110,7 +110,7 @@ namespace AP.Business.Registration.ReadModel.Implementation
         private T FindBlob<T>(string id)
             where T : class
         {
-            var dto = this.blobStorage.Find(id);
+            var dto = this.blobStorage.Find(id).Result;
             if (dto == null)
             {
                 return null;

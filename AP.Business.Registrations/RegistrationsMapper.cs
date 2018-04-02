@@ -1,5 +1,4 @@
 ﻿using AP.Business.Model.Registration.Events;
-using AP.Business.Registration;
 using AP.EntityModel.ReadModel;
 using AutoMapper;
 
@@ -9,13 +8,11 @@ namespace AP.Business.Registrations
     {
         public RegistrationsMapper()
         {
-            CreateMap<OrderPaymentConfirmed, OrderConfirmed>();
-            CreateMap<AnchorAssigned, AnchorAssignments>();
-            CreateMap<AnchorUnassigned, AnchorAssignments>();
-            CreateMap<AnchorAssignmentUpdated, AnchorAssignments>();
+            CreateMap<AnchorAssigned, Registration.AnchorAssignments.AnchorAssignment>();
+            CreateMap<AnchorUnassigned, Registration.AnchorAssignments.AnchorAssignment>();
+            CreateMap<AnchorAssignmentUpdated, Registration.AnchorAssignments.AnchorAssignment>();
             CreateMap<AnchorAssigned, OrderAnchor>();
             CreateMap<AnchorAssignmentUpdated, OrderAnchor>();
-
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AP.Core.Model.User;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -124,6 +125,20 @@ namespace EL.EntityModel
 
         [ScaffoldColumn(false)]
         public DateTimeOffset RegistrationDate { get; set; }
+    }
+
+    public class UserRefreshTokenData
+    {
+        [Key]
+        public Guid ID { get; set; }
+        public DateTime IssuedUtc { get; set; }
+        public DateTime ExpiresUtc { get; set; }
+        public string Token { get; set; }
+        public bool Revoked { get; set; }
+
+        public Guid UserID { get; set; }
+        [ForeignKey("UserID")]
+        public ApplicationUser User { get; set; }
     }
 
     public class ExternalLogin

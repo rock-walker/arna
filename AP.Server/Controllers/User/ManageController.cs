@@ -8,11 +8,11 @@ using Microsoft.Extensions.Options;
 using AP.Core.Model.User;
 using AP.Shared.Sender.Contracts;
 using AP.ViewModel.Account.Manage;
-using AP.ViewModel.Account;
+using AP.Core.Model;
 
 namespace AP.Server.Controllers.User
 {
-    [Authorize]
+    [Authorize(Roles = "Client,Administrator,PowerUser")]
     [Route("api/[controller]/[action]")]
     public class ManageController : Controller
     {
@@ -42,15 +42,15 @@ namespace AP.Server.Controllers.User
         //
         // GET: /Manage/Index
         [HttpGet]
-        public async Task<IActionResult> Index(AccountApiResult? message = null)
+        public async Task<IActionResult> Index(IdentityStatus? message = null)
         {
             ViewData["StatusMessage"] =
-                message == AccountApiResult.ChangePasswordSuccess ? "Your password has been changed."
-                : message == AccountApiResult.SetPasswordSuccess ? "Your password has been set."
-                : message == AccountApiResult.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == AccountApiResult.Error ? "An error has occurred."
-                : message == AccountApiResult.AddPhoneSuccess ? "Your phone number was added."
-                : message == AccountApiResult.RemovePhoneSuccess ? "Your phone number was removed."
+                message == IdentityStatus.ChangePasswordSuccess ? "Your password has been changed."
+                : message == IdentityStatus.SetPasswordSuccess ? "Your password has been set."
+                : message == IdentityStatus.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
+                : message == IdentityStatus.Error ? "An error has occurred."
+                : message == IdentityStatus.AddPhoneSuccess ? "Your phone number was added."
+                : message == IdentityStatus.RemovePhoneSuccess ? "Your phone number was removed."
                 : "";
 
             var user = await GetCurrentUserAsync();
@@ -74,7 +74,7 @@ namespace AP.Server.Controllers.User
         [HttpPost]
         public async Task<IActionResult> RemoveLogin(RemoveLoginViewModel account)
         {
-            AccountApiResult? message = AccountApiResult.Error;
+            IdentityStatus? message = IdentityStatus.Error;
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
@@ -82,7 +82,7 @@ namespace AP.Server.Controllers.User
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    message = AccountApiResult.RemoveLoginSuccess;
+                    message = IdentityStatus.RemoveLoginSuccess;
                 }
             }
             return RedirectToAction(nameof(ManageLogins), new { Message = message });
@@ -169,7 +169,7 @@ namespace AP.Server.Controllers.User
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.AddPhoneSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = IdentityStatus.AddPhoneSuccess });
                 }
             }
             // If we got this far, something failed, redisplay the form
@@ -189,10 +189,10 @@ namespace AP.Server.Controllers.User
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.RemovePhoneSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = IdentityStatus.RemovePhoneSuccess });
                 }
             }
-            return RedirectToAction(nameof(Index), new { Message = AccountApiResult.Error });
+            return RedirectToAction(nameof(Index), new { Message = IdentityStatus.Error });
         }
 
         //
@@ -220,12 +220,12 @@ namespace AP.Server.Controllers.User
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation(3, "User changed their password successfully.");
-                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.ChangePasswordSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = IdentityStatus.ChangePasswordSuccess });
                 }
                 AddErrors(result);
                 return View(model);
             }
-            return RedirectToAction(nameof(Index), new { Message = AccountApiResult.Error });
+            return RedirectToAction(nameof(Index), new { Message = IdentityStatus.Error });
         }
 
         //
@@ -253,22 +253,22 @@ namespace AP.Server.Controllers.User
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = AccountApiResult.SetPasswordSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = IdentityStatus.SetPasswordSuccess });
                 }
                 AddErrors(result);
                 return View(model);
             }
-            return RedirectToAction(nameof(Index), new { Message = AccountApiResult.Error });
+            return RedirectToAction(nameof(Index), new { Message = IdentityStatus.Error });
         }
 
         //GET: /Manage/ManageLogins
         [HttpGet]
-        public async Task<IActionResult> ManageLogins(AccountApiResult? message = null)
+        public async Task<IActionResult> ManageLogins(IdentityStatus? message = null)
         {
             ViewData["StatusMessage"] =
-                message == AccountApiResult.RemoveLoginSuccess ? "The external login was removed."
-                : message == AccountApiResult.AddLoginSuccess ? "The external login was added."
-                : message == AccountApiResult.Error ? "An error has occurred."
+                message == IdentityStatus.RemoveLoginSuccess ? "The external login was removed."
+                : message == IdentityStatus.AddLoginSuccess ? "The external login was added."
+                : message == IdentityStatus.Error ? "An error has occurred."
                 : "";
             var user = await GetCurrentUserAsync();
             if (user == null)
@@ -312,13 +312,13 @@ namespace AP.Server.Controllers.User
             var info = await _signInManager.GetExternalLoginInfoAsync(await _userManager.GetUserIdAsync(user));
             if (info == null)
             {
-                return RedirectToAction(nameof(ManageLogins), new { Message = AccountApiResult.Error });
+                return RedirectToAction(nameof(ManageLogins), new { Message = IdentityStatus.Error });
             }
             var result = await _userManager.AddLoginAsync(user, info);
-            var message = AccountApiResult.Error;
+            var message = IdentityStatus.Error;
             if (result.Succeeded)
             {
-                message = AccountApiResult.AddLoginSuccess;
+                message = IdentityStatus.AddLoginSuccess;
                 // Clear the existing external cookie to ensure a clean login process
                 await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
             }

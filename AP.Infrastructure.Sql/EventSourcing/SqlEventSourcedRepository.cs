@@ -22,7 +22,7 @@ namespace Infrastructure.Sql.EventSourcing
     using AP.Infrastructure.Serialization;
     using AP.Infrastructure.Sql.EventSourcing;
     using AP.Infrastructure;
-    using AP.Infrastructure.Sql.Utils;
+    using AP.Infrastructure.Utils;
     using AP.Core.Database;
     using System.Reflection;
     using EntityFramework.DbContextScope.Interfaces;

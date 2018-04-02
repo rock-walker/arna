@@ -4,12 +4,11 @@
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
-    using Infrastructure.Messaging;
-    using Infrastructure.Processes;
-    using Infrastructure.Utils;
-    //using Payments.Contracts.Events;
-    using Registration.Commands;
-    using Registration.Events;
+    using AP.Infrastructure.Messaging;
+    using AP.Infrastructure.Processes;
+    using AP.Infrastructure.Utils;
+    using AP.Business.Registration.Commands;
+    using AP.Business.Registration.Events;
     using System.ComponentModel.DataAnnotations.Schema;
     using AP.Business.Model.Registration.Events;
 

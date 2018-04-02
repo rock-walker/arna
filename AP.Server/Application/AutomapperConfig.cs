@@ -6,7 +6,7 @@ namespace AP.Server.Application
     {
         public static void RegisterModels()
         {
-            Mapper.Initialize(cfg => cfg.AddProfiles(new[] { "AP.Server", "AP.Business.Registrations" }));
+            Mapper.Initialize(cfg => cfg.AddProfiles(new[] { "AP.Server", "AP.Business.Registrations", "AP.ViewModel", "AP.Shared" }));
         }
     }
 }

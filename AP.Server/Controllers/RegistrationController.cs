@@ -18,12 +18,10 @@
     using Microsoft.Extensions.Logging;
     using System.Security.Principal;
 
-    [AllowAnonymous]
+    [Authorize(Roles = "Client,Administrator,PowerUser")]
     [Route("api/[controller]/[action]")]
     public class RegistrationController : WorkshopTenantController
     {
-        public const string ThirdPartyProcessorPayment = "thirdParty";
-        public const string InvoicePayment = "invoice";
         private static readonly TimeSpan DraftOrderWaitTimeout = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan DraftOrderPollInterval = TimeSpan.FromMilliseconds(750);
         private static readonly TimeSpan PricedOrderWaitTimeout = TimeSpan.FromSeconds(5);
@@ -232,19 +230,6 @@
                     if (pricedOrder.IsFreeOfCharge)
                     {
                         return CompleteRegistrationWithoutPayment(orderId);
-                    }
-
-                    switch (paymentType)
-                    {
-                        case ThirdPartyProcessorPayment:
-
-                            return 1;//CompleteRegistrationWithThirdPartyProcessorPayment(pricedOrder, orderVersion);
-
-                        case InvoicePayment:
-                            break;
-
-                        default:
-                            break;
                     }
 
                     throw new InvalidOperationException();

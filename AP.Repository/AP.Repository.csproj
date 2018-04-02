@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLocal|AnyCPU'" />
+
   <ItemGroup>
     <Compile Remove="Migrations\00000000000000_CreateIdentitySchema.cs" />
     <Compile Remove="Migrations\00000000000000_CreateIdentitySchema.Designer.cs" />

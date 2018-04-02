@@ -1,6 +1,6 @@
 ﻿namespace AP.ViewModel.Account
 {
-    public enum AccountApiResult
+    public enum IdentityStatus
     {
         LoggedInSuccess,
         AddPhoneSuccess,

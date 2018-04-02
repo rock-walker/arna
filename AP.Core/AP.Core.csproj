@@ -8,14 +8,19 @@
     <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLocal|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;EFCore</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Remove="User\Providers\ProjectMembershipProvider.cs" />
-    <Compile Remove="User\Providers\ProjectRoleProvider.cs" />
+    <Compile Remove="User\Authentication\RefreshTokenProviderMiddleware.cs" />
+    <Compile Remove="User\Authentication\TokenProviderMiddleware.cs" />
+    <Compile Remove="User\Authentication\TokenProviderOptions.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="User\Principal\" />
-    <Folder Include="User\Providers\" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.2.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
   </ItemGroup>
 
   <ItemGroup>

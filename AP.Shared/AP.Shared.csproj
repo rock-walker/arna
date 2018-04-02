@@ -5,6 +5,8 @@
     <UserSecretsId>ac0c1d7a-5710-4acc-bb47-cb0dde1e0968</UserSecretsId>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLocal|AnyCPU'" />
+
   <ItemGroup>
     <PackageReference Include="SendGrid" Version="9.7.0" />
     <PackageReference Include="twilio" Version="5.6.1" />

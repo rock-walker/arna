@@ -7,8 +7,6 @@ using AP.Repository.Workshop.Contracts;
 using AP.Repository.Workshop.Services;
 using AP.Business.AutoDomain.Workshop.Services;
 using AP.Business.AutoDomain.Workshop.Contracts;
-using AP.Core.Model.User;
-using Microsoft.AspNetCore.Builder;
 using AP.Shared.Sender.Contracts;
 using AP.Shared.Sender.Services;
 using AP.Core.Model.Authentication;
@@ -23,10 +21,6 @@ using AP.Business.Domain.Common;
 using AP.EntityModel.ReadModel;
 using AP.Business.Registration.ReadModel;
 using AP.Business.Registration.ReadModel.Implementation;
-using AP.Infrastructure.Sql.EventSourcing;
-using AP.Infrastructure.EventSourcing;
-using Infrastructure.Sql.EventSourcing;
-using AP.Infrastructure.Sql.MessageLog;
 using AP.Business.Registration.Database;
 using AP.Infrastructure.Processes;
 using AP.Business.Registration;
@@ -40,6 +34,8 @@ using AP.Repository.Attendee.Services;
 using AP.Repository.Booking.Contracts;
 using AP.Repository.Booking.Services;
 using AP.Business.Domain.Common.Category;
+using AP.Shared.Security.Contracts;
+using AP.Shared.Security.Services;
 
 namespace AP.Server.Application
 {
@@ -60,10 +56,7 @@ namespace AP.Server.Application
             RegisterRepositories(services);
             RegisterDbContexts(services, configuration);
 
-            RegisterAuthentication(services, configuration);
-
-            BookingContainer.SetupBookingHandlers(services);
-            BookingContainer.OnCreateContainer(services);
+            ConfigureThirdParty(services, configuration);
         }
 
         private static void RegisterControllers(IServiceCollection services)
@@ -79,7 +72,9 @@ namespace AP.Server.Application
             services.AddScoped<IAttendeeAccountService, AttendeeAccountService>();
             services.AddScoped<IOrderDao, OrderDao>();
             services.AddSingleton<IWorkshopDao, CachingWorkshopDao>();
-            services.AddScoped<IWorkshopDao, WorkshopDao>();
+            services.AddSingleton<IWorkshopDao, WorkshopDao>();
+            services.AddScoped<IIdentityProvider, IdentityProvider>();
+            services.AddScoped<IIdentityService, IdentityService>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)
@@ -97,7 +92,8 @@ namespace AP.Server.Application
             services.AddScoped<IWorkshopFilterRepository, WorkshopFilterRepository>();
             services.AddScoped<IAutobrandRepository, AutobrandRepository>();
             services.AddScoped<IAttendeeAccountRepository, AttendeeAccountRepository>();
-            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IIdentityRepository, IdentityRepository>();
+            services.AddSingleton<IOrderRepository, OrderRepository>();
         }
 
         private static void RegisterDbContexts(IServiceCollection services, IConfigurationRoot config)
@@ -115,45 +111,12 @@ namespace AP.Server.Application
             services.AddTransient<Func<IProcessManagerDataContext<RegistrationProcessManager>>, Func<SqlProcessManagerDataContext<RegistrationProcessManager>>>(
                 provider => () => new SqlProcessManagerDataContext<RegistrationProcessManager>(() => provider.GetService<RegistrationProcessManagerDbContext>(), 
                 provider.GetService<ICommandBus>(), provider.GetService<ITextSerializer>(), provider.GetService<ILogger>()));
-            services.AddDbContext<EventStoreDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
-            services.AddSingleton(typeof(IEventSourcedRepository<>), typeof(SqlEventSourcedRepository<>));
-            services.AddDbContext<MessageLogDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
-
-            services.AddIdentity<ApplicationUser, ApplicationRole>(configuration =>
-                {
-                    configuration.SignIn.RequireConfirmedEmail = false;
-                    configuration.SignIn.RequireConfirmedPhoneNumber = true;
-                })
-                .AddEntityFrameworkStores<IdentityContext, Guid>()
-                .AddDefaultTokenProviders();
-
-            // Configure Identity
-            services.Configure<IdentityOptions>(options =>
-            {
-                // Password settings
-#if DEBUG
-#else
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 8;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = false;
-#endif
-                // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
-                options.Lockout.MaxFailedAccessAttempts = 10;
-
-                // Cookie settings
-                options.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromDays(150);
-                options.Cookies.ApplicationCookie.LoginPath = "/Account/LogIn";
-                options.Cookies.ApplicationCookie.LogoutPath = "/Account/LogOut";
-
-                // User settings
-                options.User.RequireUniqueEmail = true;
-            });
+            //services.AddDbContext<EventStoreDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+            //services.AddSingleton(typeof(IEventSourcedRepository<>), typeof(SqlEventSourcedRepository<>));
+            //services.AddDbContext<MessageLogDbContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
         }
 
-        private static void RegisterAuthentication(IServiceCollection services, IConfiguration config)
+        private static void ConfigureThirdParty(IServiceCollection services, IConfiguration config)
         {
             services.Configure<AuthMessageSenderOptions>(config);
             services.Configure<TwilioSmsOptions>(config.GetSection("Twilio"));

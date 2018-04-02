@@ -18,19 +18,11 @@
         IEventHandler<OrderPlaced>, IEventHandler<OrderUpdated>,
         IEventHandler<OrderPartiallyReserved>, IEventHandler<OrderReservationCompleted>,
         IEventHandler<OrderRegistrantAssigned>,
-        IEventHandler<OrderConfirmed>, IEventHandler<OrderPaymentConfirmed>
+        IEventHandler<OrderConfirmed>
     {
         private readonly IDbContextScopeFactory factory;
         private readonly ILogger<DraftOrderViewModelGenerator> logger;
-        /*
-        static DraftOrderViewModelGenerator()
-        {
-            // Mapping old version of the OrderPaymentConfirmed event to the new version.
-            // Currently it is being done explicitly by the consumer, but this one in particular could be done
-            // at the deserialization level, as it is just a rename, not a functionality change.
-            Mapper.Initialize(cfg => cfg.CreateMap<OrderPaymentConfirmed, OrderConfirmed>());
-        }
-        */
+
         public DraftOrderViewModelGenerator(IDbContextScopeFactory factory, 
             ILogger<DraftOrderViewModelGenerator> logger,
             IAmbientDbContextLocator locator) : base (locator)
@@ -101,11 +93,6 @@
         public void Handle(OrderReservationCompleted @event)
         {
             this.UpdateReserved(@event.SourceId, @event.ReservationExpiration, DraftOrder.States.ReservationCompleted, @event.Version, @event.Anchors);
-        }
-
-        public void Handle(OrderPaymentConfirmed @event)
-        {
-            this.Handle(Mapper.Map<OrderConfirmed>(@event));
         }
 
         public void Handle(OrderConfirmed @event)

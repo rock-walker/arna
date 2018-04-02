@@ -1,4 +1,5 @@
 ﻿using AP.Core.Model.User;
+using EL.EntityModel;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,9 +11,16 @@ namespace AP.Repository.Context
     {
         public IdentityContext(DbContextOptions<IdentityContext> options) : base(options)
         {
-
         }
 
+        public DbSet<UserRefreshTokenData> UserRefreshTokens { get; set; }
+
+        /*
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            //optionsBuilder.UseSqlServer()
+        }
+        */
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -24,6 +32,7 @@ namespace AP.Repository.Context
             builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
             builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
             builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+            builder.Entity<UserRefreshTokenData>().ToTable("UserRefreshTokens");
         }
     }
 }

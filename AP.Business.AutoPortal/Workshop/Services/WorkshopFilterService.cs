@@ -36,6 +36,15 @@ namespace AP.Business.AutoPortal.Workshop.Services
             }
         }
 
+        public WorkshopViewModel FindBySlug(string slug)
+        {
+            using (var scope = scopeFactory.CreateReadOnly())
+            {
+                var workshop = _filterRepository.FindBySlug(slug);
+                return Mapper.Map<WorkshopViewModel>(workshop);
+            }
+        }
+
         public async Task<WorkshopShortViewModel> FindByName(string name)
         {
             throw new NotImplementedException();

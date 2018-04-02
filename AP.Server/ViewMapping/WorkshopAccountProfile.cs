@@ -17,7 +17,9 @@ namespace AP.Server.ViewMapping
             CreateMap<LocationViewModel, GeoMarker>()
                 .ForMember(dest => dest.Lat, opt => opt.MapFrom(src => GeoLocation.ConvertDegreesToRadians(src.Lat)))
                 .ForMember(dest => dest.Lng, opt => opt.MapFrom(src => GeoLocation.ConvertDegreesToRadians(src.Lng)))
-                .ReverseMap();
+                .ReverseMap()
+                .ForMember(dest => dest.Lat, opt => opt.MapFrom(src => GeoLocation.ConvertRadiansToDegrees(src.Lat)))
+                .ForMember(dest => dest.Lng, opt => opt.MapFrom(src => GeoLocation.ConvertRadiansToDegrees(src.Lng)));
 
             CreateMap<AddressViewModel, AddressData>().ReverseMap();
             CreateMap<CityViewModel, CityData>().ReverseMap();

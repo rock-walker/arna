@@ -18,6 +18,9 @@ namespace AP.ViewModel.Workshop
         public string Description { get; set; }
         public DateTime RegisterDate { get; set;  }
 
+        public string Slug { get; set; }
+        public string AccessCode { get; set; }
+
         public IEnumerable<WorkshopCategoryViewModel> WorkshopCategories { get; set; }
         public IEnumerable<AutobrandViewModel> WorkshopAutobrands { get; set; }
         public IEnumerable<DayTimetableViewModel> WorkshopWeekTimetable { get; set; }
