@@ -6,8 +6,10 @@ namespace AP.Shared.Security.Contracts
     public interface IAccountService
     {
         Task AddRole(ApplicationUser user, Roles role);
-        Task<ApplicationUser> FindUserById(string userId);
+        Task AddClaim(ApplicationUser user, ApplicationClaims appClaim);
+        Task<ApplicationUser> FindById(string userId);
+        Task<ApplicationUser> FindByEmail(string email);
         Task<JwtResponse> CompleteUserVerification(ApplicationUser user, string phoneNumber, string code);
-        Task<JwtResponse> RefreshJwt(ApplicationUser user, string verifyRefreshToken);
+        Task<JwtResponse> RefreshJwt(ApplicationUser user);
     }
 }

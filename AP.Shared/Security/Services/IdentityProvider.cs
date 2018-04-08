@@ -99,7 +99,7 @@ namespace AP.Shared.Security.Services
                 Token = Guid.NewGuid().ToString(),
                 IssuedUtc = now,
             };
-            refreshToken.ExpiresUtc = now.AddDays(10);
+            refreshToken.ExpiresUtc = now.AddDays(300);
             identityService.PersistRefreshToken(refreshToken, identity.User);
 
             return refreshToken;
@@ -145,6 +145,7 @@ namespace AP.Shared.Security.Services
             }
 
             jwtIdentity.Roles = await userManager.GetRolesAsync(jwtIdentity.User);
+            jwtIdentity.Claims = await userManager.GetClaimsAsync(jwtIdentity.User);
 
             return jwtIdentity;
         }

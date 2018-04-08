@@ -1,9 +1,10 @@
-﻿using System;
+﻿using AP.Core.Model.User;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace AP.ViewModel.Account.Manage
 {
-    public class VerifyPhoneNumberViewModel
+    public class VerifyPhoneNumberViewModel : JwtResponse
     {
         [Required]
         public string Code { get; set; }
@@ -12,8 +13,5 @@ namespace AP.ViewModel.Account.Manage
         [Phone]
         [Display(Name = "Phone number")]
         public string Phone { get; set; }
-
-        [Required]
-        public string UserId { get; set; }
     }
 }

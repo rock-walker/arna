@@ -16,43 +16,50 @@ using AP.Business.AutoPortal.Events;
 using System.Linq;
 using System.Collections.Generic;
 using AP.Infrastructure.Utils;
+using AP.Shared.Security.Contracts;
+using AP.Shared.Geo.Contracts;
 
 namespace AP.Business.AutoPortal.Workshop.Services
 {
     public class WorkshopAccountService : IWorkshopAccountService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAddressService _addressService;
+        private readonly IAccountService accountService;
         private readonly IWorkshopFilterRepository filterRepo;
         private readonly IWorkshopAccountRepository _workshopAccountRepository;
+        private readonly IGeoLocator geoLocator;
         private readonly IDbContextScopeFactory _dbContextScope;
         private readonly IEventBus eventBus;
 
         public WorkshopAccountService(UserManager<ApplicationUser> userManager,
             IWorkshopAccountRepository accountRepo,
             IDbContextScopeFactory scopeFactory,
+            IAccountService accountService,
             IAddressService addressService,
             IWorkshopFilterRepository filterRepo,
+            IGeoLocator geoLocator,
             IEventBus eventBus)
         {
             _addressService = addressService;
             this.filterRepo = filterRepo;
-            _userManager = userManager;
+            this.accountService = accountService;
             _workshopAccountRepository = accountRepo;
             _dbContextScope = scopeFactory;
             this.eventBus = eventBus;
+            this.geoLocator = geoLocator;
         }
 
-        public async Task<Guid> Add(WorkshopAccountViewModel workshopViewModel)
+        public async Task<Guid> Add(WorkshopAccountViewModel workshopViewModel, ApplicationUser user)
         {
             var workshopData = Mapper.Map<WorkshopData>(workshopViewModel);
 
+            workshopData.UserID = user.Id;
             var workshopId = Guid.Empty;
             AnchorType anchor;
             using (var dbContext = _dbContextScope.Create())
             {
                 //check if the same instance is already exist: verify by NAME
-
+                var address = geoLocator.DecodeAddress(workshopViewModel.GooglePlaceId);
                 var cityId = _addressService.GetCityByName(workshopData.Address.City.Ru);
                 if (cityId == null)
                 {
@@ -77,7 +84,7 @@ namespace AP.Business.AutoPortal.Workshop.Services
                 workshopData.Slug = HandleGenerator.Generate(12);
                 workshopData.AccessCode = HandleGenerator.Generate(6);
 
-                workshopId = await _workshopAccountRepository.Add(workshopData);
+                workshopId = _workshopAccountRepository.Add(workshopData);
 
                 dbContext.SaveChanges();
             }
@@ -87,6 +94,8 @@ namespace AP.Business.AutoPortal.Workshop.Services
             {
                 PublishAnchorCreated(workshopId, anchor);
             }
+
+            await accountService.AddClaim(user, ApplicationClaims.Accomplished);
 
             return workshopId;
         }
@@ -192,12 +201,6 @@ namespace AP.Business.AutoPortal.Workshop.Services
         public void Unpublish(Guid workshopId)
         {
             UpdatePublished(workshopId, false);
-        }
-
-        public async Task<string> GetAccountPhone(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            return user.PhoneNumber;
         }
 
         private void UpdatePublished(Guid workshopId, bool isPublished)

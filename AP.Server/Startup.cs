@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using AP.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
+using AP.Core.Model.User;
 
 namespace AP.Server
 {
@@ -57,27 +59,25 @@ namespace AP.Server
         {
             try
             {
-                services.AddMvc(/*config =>
-                        {
-                            var policy = new AuthorizationPolicyBuilder()
-                                            .RequireAuthenticatedUser()
-                                            .Build();
-                            config.Filters.Add(new AuthorizeFilter(policy));
-                        }
-                    */)
-                    .AddDataAnnotationsLocalization(options => {
-                        options.DataAnnotationLocalizerProvider = (type, factory) =>
-                            factory.Create(typeof(Shared.Resources.Annotations));
-                        });
-
-                services.AddAuthorization(auth =>
+                services.AddAuthorization(options =>
                 {
-                    auth.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
+                    options.AddPolicy("Bearer", new AuthorizationPolicyBuilder()
                         .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
                         .RequireAuthenticatedUser()
                         .Build()
                     );
+
+                    options.AddPolicy("Verified", policy => policy.RequireClaim(ClaimTypes.AuthorizationDecision, 
+                        Enum.GetName(typeof(ApplicationClaims), ApplicationClaims.Verified)));
+                    options.AddPolicy("Accomplished", policy => policy.RequireClaim(ClaimTypes.AuthorizationDecision,
+                        Enum.GetName(typeof(ApplicationClaims), ApplicationClaims.Accomplished)));
                 });
+
+                services.AddMvc()
+                        .AddDataAnnotationsLocalization(options => {
+                            options.DataAnnotationLocalizerProvider = (type, factory) =>
+                                factory.Create(typeof(Shared.Resources.Annotations));
+                        });
 
                 services.AddMemoryCache();
                 services.AddRouting();

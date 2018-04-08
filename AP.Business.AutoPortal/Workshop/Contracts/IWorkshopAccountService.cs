@@ -1,4 +1,5 @@
-﻿using AP.ViewModel.Workshop;
+﻿using AP.Core.Model.User;
+using AP.ViewModel.Workshop;
 using System;
 using System.Threading.Tasks;
 
@@ -6,8 +7,7 @@ namespace AP.Business.AutoPortal.Workshop.Contracts
 {
     public interface IWorkshopAccountService
     {
-        Task<string> GetAccountPhone(string userId);
-        Task<Guid> Add(WorkshopAccountViewModel workshopViewModel);
+        Task<Guid> Add(WorkshopAccountViewModel workshopViewModel, ApplicationUser user);
         void Update(WorkshopAccountViewModel workshopViewModel);
         Task CreateAnchor(Guid workshopId, AnchorTypeViewModel anchorView);
         void Publish(Guid workshopId);

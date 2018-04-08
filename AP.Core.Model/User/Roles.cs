@@ -12,9 +12,6 @@ namespace AP.Core.Model.User
         [Value("Master")]
         Master,
 
-        [Value("Verified")]
-        Verified,
-
         [Value("Administrator")]
         Administrator = 2147159114,
 

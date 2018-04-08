@@ -2,7 +2,9 @@
 using AP.Core.User.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -12,12 +14,14 @@ namespace AP.Core.User.Authentication
 {
     public class JwtTokenProducer
     {
+        private static string _iosRoleClaim = "role";
+        private static string _iosPermissionsClaim = "permissions";
+        
         public static JwtResponse Produce(JwtIdentity identity, TokenProviderOptions options)
         {
             var now = System.DateTime.UtcNow;
 
-            // Specifically add the jti (nonce), iat (issued timestamp), and sub (subject/user) claims.
-            var basicClaims = new Claim[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Email, identity.User.Email),
                 new Claim(JwtRegisteredClaimNames.Sub, identity.User.UserName),
@@ -25,14 +29,19 @@ namespace AP.Core.User.Authentication
                 new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUniversalTime().ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
             };
 
-            var claims = basicClaims;
-            if (identity.Roles != null && identity.Roles.Any())
+            if (identity.Claims != null)
             {
-                var roleClaims = identity.Roles.Select(x => new Claim(ClaimTypes.Role, x)).ToArray();
-                claims = basicClaims.Concat(roleClaims).ToArray();
+                claims.AddRange(identity.Claims);
+                claims.Add(AddIosSpecificClaims(identity.Claims));
             }
 
-            // Create the JWT and write it to a string
+            if (identity.Roles != null && identity.Roles.Any())
+            {
+                var roleClaims = identity.Roles.Select(x => new Claim(ClaimTypes.Role, x));
+                claims.AddRange(roleClaims);
+                claims.Add(AddIosSpecificRoles(identity.Roles));
+            }
+
             var jwt = new JwtSecurityToken(
                 issuer: options.Issuer,
                 audience: options.Audience,
@@ -59,6 +68,18 @@ namespace AP.Core.User.Authentication
             };
 
             return response;
+        }
+
+        private static Claim AddIosSpecificClaims(IEnumerable<Claim> claims)
+        {
+            var permissions = claims.Select(x => (int)Enum.Parse(typeof(ApplicationClaims), x.Value));
+            return new Claim(_iosPermissionsClaim, JsonConvert.SerializeObject(permissions));
+        }
+
+        private static Claim AddIosSpecificRoles(IEnumerable<string> roles)
+        {
+            var intRoles = roles.Select(x => (int)Enum.Parse(typeof(Roles), x));
+            return new Claim(_iosRoleClaim, JsonConvert.SerializeObject(intRoles)); 
         }
 
         public static TokenProviderOptions InitializeOptions(IConfigurationRoot config)

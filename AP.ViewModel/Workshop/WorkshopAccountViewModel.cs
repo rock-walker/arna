@@ -30,6 +30,10 @@ namespace AP.ViewModel.Workshop
 
         [DataType(DataType.DateTime)]
         public DateTime RegisterDate { get; set; }
+
+        [StringLength(12)]
+        public string GooglePlaceId { get; set; }
+
         public bool IsPublished { get; set; }
 
         public IEnumerable<DayTimetableViewModel> WorkshopWeekTimetable { get; set; }

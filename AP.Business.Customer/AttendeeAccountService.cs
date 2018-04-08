@@ -37,7 +37,8 @@ namespace AP.Business.Attendee
                 scope.SaveChanges();
             }
 
-            await accountService.AddRole(user, Roles.Client);
+            //await accountService.AddRole(user, Roles.Accomplished);
+            await accountService.AddClaim(user, ApplicationClaims.Accomplished);
             return attendeeId;
         }
 

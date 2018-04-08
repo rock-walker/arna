@@ -7,7 +7,7 @@ namespace AP.Repository.Workshop.Contracts
 {
     public interface IWorkshopAccountRepository
     {
-        Task<Guid> Add(WorkshopData account);
+        Guid Add(WorkshopData account);
         void Update(WorkshopData @new, WorkshopData source);
         Task CreateAnchor(AnchorType anchor);
         WorkshopData LoadAnchors(WorkshopData account);

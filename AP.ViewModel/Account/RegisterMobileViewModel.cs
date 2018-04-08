@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AP.Core.Model.User;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace AP.ViewModel.Account
 {
@@ -11,5 +9,9 @@ namespace AP.ViewModel.Account
         [Phone]
         [Display(Name = "Phone")]
         public string Phone { get; set; }
+
+        [Required]
+        [EnumDataType(typeof(Roles))]
+        public Roles Role { get; set; }
     }
 }

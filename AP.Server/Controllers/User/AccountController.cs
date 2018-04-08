@@ -16,24 +16,25 @@ using AP.Core.Model;
 using AP.Shared.Security.Contracts;
 using AutoMapper;
 using System.Security.Principal;
+using Microsoft.Extensions.Localization;
+using AP.Server.Controllers;
 
 namespace WebApplication6.Controllers
 {
     [Authorize]
-    [Route("api/[controller]/[action]")]
-    public class AccountController : Controller
+    [Route("api/[controller]")]
+    public class AccountController : IdentityController
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
-        private readonly ILogger _logger;
+        private readonly ILogger<AccountController> logger;
         private readonly IIdentityProvider _identity;
         private readonly IAccountService accountService;
+        private readonly IStringLocalizer<AccountController> localizer;
 
         private readonly string _externalCookieScheme;
-
-        private IIdentity LoggedInUser => User.Identity;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -42,17 +43,19 @@ namespace WebApplication6.Controllers
             IEmailSender emailSender,
             ISmsSender smsSender,
             IIdentityProvider identity,
-            IAccountService accountService,
-            ILoggerFactory loggerFactory)
+            IAccountService accountService, 
+            ILogger<AccountController> logger,
+            IStringLocalizer<AccountController> localizer) : base(accountService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
             _emailSender = emailSender;
             _smsSender = smsSender;
-            _logger = loggerFactory.CreateLogger<AccountController>();
             _identity = identity;
             this.accountService = accountService;
+            this.localizer = localizer;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -116,7 +119,7 @@ namespace WebApplication6.Controllers
 
                     // Comment out following line to prevent a new user automatically logged on.
                     // await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation(3, "User created a new account with password.");
+                    logger.LogInformation(3, "User created a new account with password.");
                     return IdentityStatus.AddLoginSuccess;
                 }
                 AddErrors(result);
@@ -125,7 +128,7 @@ namespace WebApplication6.Controllers
             return IdentityStatus.Error;
         }
 
-        [HttpPost]
+        [HttpPost("register-phone")]
         [AllowAnonymous]
         public async Task<VerifyPhoneNumberViewModel> RegisterByPhoneNumber([FromBody]RegisterMobileViewModel model)
         {
@@ -138,26 +141,55 @@ namespace WebApplication6.Controllers
                     PhoneNumber = model.Phone,
                 };
 
+                if (!(model.Role == Roles.Client || model.Role == Roles.Master))
+                {
+                    throw new ArgumentException(localizer["InvalidClientTypeEx"].Value);
+                }
+
                 var result = await _userManager.CreateAsync(user, model.Password);
+
                 if (result.Succeeded)
                 {
-                    //var role = Roles.Verified;
-                    //await _userManager.AddToRoleAsync(user, role.GetValue());
+                    logger.LogInformation($"User {user.UserName} has been created successfully.");
+
+                    await accountService.AddRole(user, model.Role);
                     var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Phone);
+#if DEBUG
+#else
                     await _smsSender.SendSmsAsync(model.Phone, "Your security code is: " + code);
+#endif
+                    logger.LogInformation($"Your verification code is: {code}");
+
+                    var jwt = await accountService.RefreshJwt(user);
                     return new VerifyPhoneNumberViewModel
                     {
                         Phone = model.Phone,
-                        UserId = user.Id.ToString()
+                        AccessToken = jwt.AccessToken,
+                        RefreshToken = jwt.RefreshToken
                     };
                 }
+                else
+                {
+                    var errorMessage = result.Errors.First().Description;
+                    throw new InvalidOperationException(errorMessage);
+                }
+            }
+            else
+            {
+                var invalidParams = string.Join("; ", ModelState.Keys);
+                throw new ArgumentException($"Invalid JSON params are {invalidParams}");
+
+                return new VerifyPhoneNumberViewModel
+                {
+                    Message = $"Invalid JSON params are {invalidParams}"
+                };
             }
 
             return null;
         }
 
-        [HttpPost]
-        [AllowAnonymous]
+        [HttpPost("verify-phone")]
+        [Authorize(Roles = "Client,Master")]
         public async Task<JwtResponse> VerifyPhoneNumber([FromBody]VerifyPhoneNumberViewModel model)
         {
             var jwt = new JwtResponse
@@ -170,7 +202,8 @@ namespace WebApplication6.Controllers
                 jwt.Message = "Invalid JSON model";
                 return jwt;
             }
-            var user = await accountService.FindUserById(model.UserId.ToString());
+
+            var user = await GetCurrentUser();
             if (user != null)
             {
                 var jwtResponse = await accountService.CompleteUserVerification(user, model.Phone, model.Code);
@@ -191,7 +224,7 @@ namespace WebApplication6.Controllers
         public async Task Logout()
         {
             await _signInManager.SignOutAsync();
-            _logger.LogInformation(4, "User logged out.");
+            logger.LogInformation(4, "User logged out.");
             //return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
@@ -228,7 +261,7 @@ namespace WebApplication6.Controllers
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
             if (result.Succeeded)
             {
-                _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
+                logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
                 return RedirectToLocal(returnUrl);
             }
             if (result.RequiresTwoFactor)
@@ -271,7 +304,7 @@ namespace WebApplication6.Controllers
                     if (result.Succeeded)
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
-                        _logger.LogInformation(6, "User created an account using {Name} provider.", info.LoginProvider);
+                        logger.LogInformation(6, "User created an account using {Name} provider.", info.LoginProvider);
                         return RedirectToLocal(returnUrl);
                     }
                 }
@@ -478,7 +511,7 @@ namespace WebApplication6.Controllers
             }
             if (result.IsLockedOut)
             {
-                _logger.LogWarning(7, "User account locked out.");
+                logger.LogWarning(7, "User account locked out.");
                 return View("Lockout");
             }
             else
@@ -496,7 +529,7 @@ namespace WebApplication6.Controllers
             return View();
         }
 
-        #region Helpers
+#region Helpers
 
         private void AddErrors(IdentityResult result)
         {
@@ -518,12 +551,6 @@ namespace WebApplication6.Controllers
                 //return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }
-
-        private Task<ApplicationUser> GetCurrentUserAsync()
-        {
-            return _userManager.GetUserAsync(HttpContext.User);
-        }
-
-        #endregion
+#endregion
     }
 }

@@ -6,12 +6,14 @@ using AP.Business.AutoPortal.Workshop.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
+using AP.Shared.Security.Contracts;
+using AP.Core.Model.User;
 
 namespace AP.Server.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Roles="Master")]
     [Route("api/[controller]/[action]")]
-    public class WorkshopAccountController : Controller
+    public class WorkshopAccountController : IdentityController
     {
         private readonly IWorkshopAccountService workshopAccountService;
         private readonly IWorkshopFilterService filterService;
@@ -44,8 +46,10 @@ namespace AP.Server.Controllers
             base.OnActionExecuting(filterContext);
         }
 
-        public WorkshopAccountController(IWorkshopAccountService workshopAccountService,
-                                         IWorkshopFilterService filterService)
+        public WorkshopAccountController(
+            IWorkshopAccountService workshopAccountService,
+            IWorkshopFilterService filterService,
+            IAccountService accountService) : base (accountService)
         {
             this.workshopAccountService = workshopAccountService;
             this.filterService = filterService;
@@ -58,8 +62,8 @@ namespace AP.Server.Controllers
             {
                 await Task.FromException(new ArgumentException("User ID is empty"));
             }
-
-            return await workshopAccountService.GetAccountPhone(userId);
+            var user = await GetCurrentUser();
+            return user.PhoneNumber;
         }
 
         [HttpGet]
@@ -74,20 +78,37 @@ namespace AP.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<string> Add([FromBody]WorkshopAccountViewModel workshop)
+        [Authorize(Policy = "Verified")]
+        public async Task<object> Create([FromBody]WorkshopAccountViewModel workshop)
         {
+            var response = new JwtResponse
+            {
+                Message = "Creation of workshop failed"
+            };
+            Guid workshopId;
+
             if (ModelState.IsValid)
             {
                 workshop.RegisterDate = DateTime.UtcNow;
-                var workshopId = await workshopAccountService.Add(workshop);
+                var user = await GetCurrentUser();
+                workshopId = await workshopAccountService.Add(workshop, user);
 
-                return workshopId.ToString();
+                if (workshopId != Guid.Empty)
+                {
+                    response = await RefreshJwt(user);
+                }
             }
 
-            return WorkshopAccountResult.WorkshopError.ToString();
+            //TODO: think about output model
+            return new
+            {
+                Token = response,
+                WorkshopId = workshopId
+            };
         }
 
         [HttpPut]
+        [Authorize(Policy = "Accomplished")]
         public WorkshopAccountResult Edit([FromBody]WorkshopAccountViewModel workshop)
         {
             if (ModelState.IsValid)

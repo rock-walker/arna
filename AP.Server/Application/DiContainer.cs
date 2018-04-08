@@ -36,6 +36,8 @@ using AP.Repository.Booking.Services;
 using AP.Business.Domain.Common.Category;
 using AP.Shared.Security.Contracts;
 using AP.Shared.Security.Services;
+using AP.Shared.Geo.Contracts;
+using AP.Shared.Geo.Services;
 
 namespace AP.Server.Application
 {
@@ -77,6 +79,7 @@ namespace AP.Server.Application
             services.AddScoped<IIdentityProvider, IdentityProvider>();
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IGeoLocator, GMapsGeoLocator>();
         }
 
         private static void RegisterRepositories(IServiceCollection services)

@@ -18,7 +18,7 @@
     using Microsoft.Extensions.Logging;
     using System.Security.Principal;
 
-    [Authorize(Roles = "Client,Administrator,PowerUser")]
+    [Authorize(Roles = "Client,Accomplished,Administrator,PowerUser")]
     [Route("api/[controller]/[action]")]
     public class RegistrationController : WorkshopTenantController
     {

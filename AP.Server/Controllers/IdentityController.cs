@@ -1,27 +1,25 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
 using AP.Core.Model.User;
 using System.Security;
 using System.Security.Claims;
-using System.Collections.Generic;
+using AP.Shared.Security.Contracts;
 
 namespace AP.Server.Controllers
 {
     public class IdentityController : Controller
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private IEnumerable<Claim> Claims => User.Claims;
+        private readonly IAccountService accountService;
 
-        public IdentityController(UserManager<ApplicationUser> userManager)
+        public IdentityController(IAccountService accountService)
         {
-            this.userManager = userManager;
+            this.accountService = accountService;
         }
 
         protected async Task<ApplicationUser> GetCurrentUser()
         {
             var email = User.FindFirst(ClaimTypes.Email).Value;
-            var user = await userManager.FindByEmailAsync(email);
+            var user = await accountService.FindByEmail(email);
 
             if (user == null)
             {
@@ -32,6 +30,16 @@ namespace AP.Server.Controllers
             }
 
             return user;
+        }
+
+        protected async Task<JwtResponse> RefreshJwt(ApplicationUser user = null)
+        {
+            if (user == null)
+            {
+                user = await GetCurrentUser();
+            }
+
+            return await accountService.RefreshJwt(user);
         }
     }
 }

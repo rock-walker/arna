@@ -15,9 +15,9 @@ namespace AP.Repository.Workshop.Services
         {
         }
 
-        public async Task<Guid> Add(WorkshopData account)
+        public Guid Add(WorkshopData account)
         {
-            await DbContext.AddAsync(account);
+            DbContext.Add(account);
             return account.ID;
         }
 
