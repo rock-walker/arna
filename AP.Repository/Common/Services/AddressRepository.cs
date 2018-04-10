@@ -4,6 +4,7 @@ using AP.Repository.Context;
 using EntityFramework.DbContextScope.Interfaces;
 using System.Linq;
 using AP.Core.Database;
+using AP.EntityModel.Common;
 
 namespace AP.Repository.Common.Services
 {
@@ -24,6 +25,28 @@ namespace AP.Repository.Common.Services
             }
 
             return city.ID;
+        }
+
+        public Guid? AddCity(string cityName, string countryName)
+        {
+            var shortCountry = countryName.ToUpper();
+            var country = DbContext.Countries.FirstOrDefault(x => x.Shortname == shortCountry);
+            Guid? cityId = null;
+            if (country != null)
+            {
+                var city = new CityData
+                {
+                    CountryID = country.ID,
+                    Name = cityName,
+                    Ru = cityName,
+                };
+                var cityData = DbContext.Cities.Add(city);
+                DbContext.SaveChanges();
+
+                cityId = cityData.Entity.ID;
+            }
+
+            return cityId;
         }
     }
 }

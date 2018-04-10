@@ -1,67 +1,78 @@
-﻿using System;
-using AP.Shared.Geo.Contracts;
+﻿using AP.Shared.Geo.Contracts;
 using System.Xml.Linq;
 using System.Linq;
 using AP.Shared.Geo.Models;
-using AP.Core.Extensions;
+using System.Threading.Tasks;
+using System.Net.Http;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace AP.Shared.Geo.Services
 {
     public class GMapsGeoLocator : IGeoLocator
     {
-        private string apiKey = "";
-        private string googleMapsUrl = @"https://maps.googleapis.com/maps/api/place/details/xml?placeid={0}&key={1}";
+        private const string apiKey = "AIzaSyClRth8aBUuLmAuJwps4jRnBMX49hJ_tCU";
+        private const string googleMapsUrl = @"https://maps.googleapis.com/maps/api/place/details/json?placeid={0}&key={1}&language=ru";
 
-        public GooglePlacesResult DecodeAddress(string placeId)
+        private string[] gCityTypes = new[] { "locality", "sublocality", "sublocality_level_1", "sublocality_level_2", "sublocality_level_3", "sublocality_level_4", "sublocality_level_5" };
+        private const string gCountryType = "country";
+        private const string gStreetType = "route";
+        private const string gStreetNumber = "street_number";
+
+        public async Task<GooglePlacesResult> DecodeAddress(string placeId)
         {
-            string apiKey = ""; // Your api key
+            if (string.IsNullOrEmpty(placeId))
+            {
+                return null;
+            }
+
             string url = string.Format(googleMapsUrl, placeId, apiKey);
-            XDocument doc = XDocument.Load(url);
-            var businessResults = doc.Root.Element("result");
-
-            var addressComponents = businessResults.Elements("address_component").Where(e => e.Element("type") != null);
-            var street = businessResults.Element("vicinity").Value;
-            var cityTypes = new[] { "locality", "sublocality", "sublocality_level_1", "sublocality_level_2", "sublocality_level_3", "sublocality_level_4", "sublocality_level_5" };
-            var stateTypes = new[] { "administrative_area_level_1" };
-            var countryTypes = new[] { "country" };
-            var zipTypes = new[] { "postal_code" };
-            var location = businessResults.Element("geometry").Element("location");
-            var reviews = businessResults.Elements("review").Select(r => new GooglePlacesReview
+            GMapObject jsonData = null;
+            using (var client = new HttpClient())
             {
-                ReviewDate = FromUnixTime(r.Element("time").Value.TryParseValue<Int64>()),
-                ReviewText = r.Element("text").Value,
-                AuthorName = r.Element("author_name").Value,
-                Rating = r.Element("rating").Value.TryParseValue<Decimal>(),
-                Language = r.Element("language").Value
-            });
-            var openingHours = businessResults.Element("opening_hours");
+                var data = await client.GetStringAsync(url);
+                jsonData = JsonConvert.DeserializeObject<GMapObject>(data);
+            }
 
-            return new GooglePlacesResult
+            var doc = new XDocument();
+            var businessResults = jsonData.result;
+
+            var addressComponents = businessResults.address_components.Where(e => e.types != null);
+
+            var res = new GooglePlacesResult
             {
-                Name = businessResults.Element("name").Value,
-                Address = street.Remove(street.LastIndexOf(",")),
-                PhoneNumber = businessResults.Element("formatted_phone_number").Value,
-                City = addressComponents.FirstOrDefault(e => cityTypes.Any(s => s == e.Element("type").Value)).Element("long_name").Value,
-                State = addressComponents.FirstOrDefault(e => stateTypes.Any(s => s == e.Element("type").Value)).Element("long_name").Value,
-                Country = addressComponents.FirstOrDefault(e => countryTypes.Any(s => s == e.Element("type").Value)).Element("long_name").Value,
-                Zip = addressComponents.FirstOrDefault(e => zipTypes.Any(s => s == e.Element("type").Value)).Element("long_name").Value,
-                Latitude = location.Element("lat").Value.TryParseValue<Decimal>(),
-                Longitude = location.Element("lng").Value.TryParseValue<Decimal>(),
-                Rating = businessResults.Element("rating").Value.TryParseValue<Decimal>(),
-                Url = businessResults.Element("url").Value,
-                InternationalPhoneNumber = businessResults.Element("international_phone_number").Value,
-                Reviews = reviews,
-                OpenNow = openingHours.Element("open_now").Value.TryParseValue<bool>(),
-                OpenHours = openingHours.Elements("weekday_text").Select(e => e.Value),
-                UtcOffset = businessResults.Element("utc_offset").Value.TryParseValue<Int32>(),
-                UserRatingsTotal = businessResults.Element("user_ratings_total").Value.TryParseValue<Int32>()
+                Name = businessResults.name,
+                Street = RetrieveStreetName(addressComponents),
+                Number = RetrieveStreetNumber(addressComponents),
+                City = RetrieveCity(addressComponents),
+                Country = RetrieveCountry(addressComponents)
             };
+
+            return res;
         }
 
-        private DateTime FromUnixTime(long unixTime)
+        private string RetrieveStreetNumber(IEnumerable<AddressComponent> addressComponents)
         {
-            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return epoch.AddSeconds(unixTime);
+            var gNumberComponent = addressComponents.FirstOrDefault(e => e.types.First() == gStreetNumber);
+            return gNumberComponent?.long_name;
+        }
+
+        private string RetrieveStreetName(IEnumerable<AddressComponent> addressComponents)
+        {
+            var gStreetComponent = addressComponents.FirstOrDefault(e => e.types.First() == gStreetType);
+            return gStreetComponent?.long_name;
+        }
+
+        private string RetrieveCity(IEnumerable<AddressComponent> addressComponents)
+        {
+            var gCityComponent = addressComponents.FirstOrDefault(e => gCityTypes.First() == e.types.First());
+            return gCityComponent?.long_name;
+        }
+
+        private string RetrieveCountry(IEnumerable<AddressComponent> addressComponents)
+        {
+            var gCountryComponent = addressComponents.FirstOrDefault(e => e.types.First() == gCountryType);
+            return gCountryComponent?.short_name;
         }
     }
 }

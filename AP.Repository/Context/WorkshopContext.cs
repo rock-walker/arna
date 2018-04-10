@@ -11,7 +11,7 @@ namespace AP.Repository.Context
     {
         public WorkshopContext(DbContextOptions<WorkshopContext> options) : base(options) { }
 
-        protected DbSet<WorkshopIdentityUserDuplicate> Users { get; set; }
+        //protected DbSet<WorkshopIdentityUserDuplicate> Users { get; set; }
         public DbSet<WorkshopData> Workshops { get; set; }
         public DbSet<ContactData> Contacts { get; set; }
         public DbSet<GeoMarker> Locations { get; set; }
@@ -23,7 +23,9 @@ namespace AP.Repository.Context
         public DbSet<CountryData> Countries { get; set; }
         public DbSet<WorkshopAutoBrand> WorkshopAutoBrands { get; set; }
         public DbSet<WorkshopDayTimetableData> WorkshopWeekTimetable { get; set; }
+        //public DbSet<AnchorType> AnchorTypes { get; set; }
         public DbSet<Order> Orders { get; set; }
+        //public DbSet<OrderAnchor> OrderAnchors { get; set; }
         /*
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -34,10 +36,10 @@ namespace AP.Repository.Context
         */
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            //base.OnModelCreating(builder);
+            base.OnModelCreating(builder);
 
             //That is taken from another context
-            builder.Entity<WorkshopIdentityUserDuplicate>().ToTable("Users");
+            // builder.Entity<WorkshopIdentityUserDuplicate>().ToTable("Users");
 
             builder.Entity<WorkshopData>().ToTable("Workshop");
             builder.Entity<ContactData>().ToTable("Contacts");

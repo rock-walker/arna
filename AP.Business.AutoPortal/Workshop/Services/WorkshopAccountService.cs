@@ -2,7 +2,6 @@
 using System;
 using AP.ViewModel.Workshop;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 using AP.Core.Model.User;
 using AP.Repository.Workshop.Contracts;
 using AutoMapper;
@@ -18,6 +17,7 @@ using System.Collections.Generic;
 using AP.Infrastructure.Utils;
 using AP.Shared.Security.Contracts;
 using AP.Shared.Geo.Contracts;
+using AP.EntityModel.Common;
 
 namespace AP.Business.AutoPortal.Workshop.Services
 {
@@ -31,8 +31,7 @@ namespace AP.Business.AutoPortal.Workshop.Services
         private readonly IDbContextScopeFactory _dbContextScope;
         private readonly IEventBus eventBus;
 
-        public WorkshopAccountService(UserManager<ApplicationUser> userManager,
-            IWorkshopAccountRepository accountRepo,
+        public WorkshopAccountService(IWorkshopAccountRepository accountRepo,
             IDbContextScopeFactory scopeFactory,
             IAccountService accountService,
             IAddressService addressService,
@@ -59,14 +58,24 @@ namespace AP.Business.AutoPortal.Workshop.Services
             using (var dbContext = _dbContextScope.Create())
             {
                 //check if the same instance is already exist: verify by NAME
-                var address = geoLocator.DecodeAddress(workshopViewModel.GooglePlaceId);
-                var cityId = _addressService.GetCityByName(workshopData.Address.City.Ru);
-                if (cityId == null)
+                var gmapAddress = await geoLocator.DecodeAddress(workshopViewModel.Address.GooglePlaceId);
+                var city = workshopData.Address?.City?.Ru;
+                var country = "";
+                if (gmapAddress != null)
                 {
-                    throw new ArgumentException(string.Format("the city {0} hasn't been added to database", workshopData.Address.City.Ru));
+                    workshopData.Address = new AddressData
+                    {
+                        Building = gmapAddress.Number,
+                        GooglePlaceId = workshopViewModel.Address.GooglePlaceId,
+                        Street = gmapAddress.Street,
+                    };
+
+                    city = gmapAddress.City;
+                    country = gmapAddress.Country;
                 }
 
-                workshopData.Address.CityID = cityId;
+                workshopData.Address.CityID = VerifyOrAddCity(city, country);
+
                 if (workshopData.IsPublished)
                 {
                     workshopData.IsPublished = false;
@@ -241,6 +250,20 @@ namespace AP.Business.AutoPortal.Workshop.Services
                     eventBus.Publish(new WorkshopUnpublished { SourceId = workshop.ID });
                 }
             }
+        }
+
+        private Guid? VerifyOrAddCity(string city, string country)
+        {
+            var cityId = _addressService.GetCityByName(city);
+            if (cityId == null)
+            {
+                cityId = _addressService.AddCity(city, country);
+                if (cityId == null)
+                {
+                    throw new ArgumentException(string.Format("the city {0} hasn't been added to database", city));
+                }
+            }
+            return cityId;
         }
 
         private void PublishWorkshopEvent<T>(WorkshopData workshop)

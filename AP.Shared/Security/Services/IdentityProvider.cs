@@ -144,6 +144,8 @@ namespace AP.Shared.Security.Services
                 throw new Exception("User is locked out.");
             }
 
+            jwtIdentity.RefreshToken = GenerateRefreshToken(jwtIdentity);
+
             jwtIdentity.Roles = await userManager.GetRolesAsync(jwtIdentity.User);
             jwtIdentity.Claims = await userManager.GetClaimsAsync(jwtIdentity.User);
 

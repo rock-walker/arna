@@ -43,7 +43,7 @@
                 }
                 catch (Exception ex)
                 {
-                    var inner = ex as StorageException;
+                    var inner = ex.InnerException as StorageException;
                     if (inner == null)
                     {
                         throw;

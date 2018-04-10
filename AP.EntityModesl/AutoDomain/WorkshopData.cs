@@ -59,7 +59,7 @@ namespace AP.EntityModel.AutoDomain
         public AddressData Address { get; set; }
         public GeoMarker Location { get; set; }
         public AvatarImage Logo { get; set; }
-        public ApplicationUser User { get; set; }
+        //public ApplicationUser User { get; set; }
         public ICollection<WorkshopCategoryData> WorkshopCategories { get; set; }
         public ICollection<WorkshopAutoBrand> WorkshopAutobrands { get; set; }
         public ICollection<WorkshopDayTimetableData> WorkshopWeekTimetable { get; set; }

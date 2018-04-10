@@ -22,8 +22,22 @@ namespace AP.Business.Domain.Common
                 throw new ArgumentException("City name is invalid");
             }
 
-            using (var dbContext = _dbContextScope.CreateReadOnly()) {
+            using (var dbContext = _dbContextScope.CreateReadOnly())
+            {
                 return _addressRepository.GetCity(name);
+            }
+        }
+
+        public Guid? AddCity(string cityName, string countryShort)
+        {
+            if (string.IsNullOrEmpty(cityName))
+            {
+                throw new ArgumentException("City name doesn't exist");
+            }
+
+            using (var scope = _dbContextScope.Create())
+            {
+                return _addressRepository.AddCity(cityName, countryShort);
             }
         }
     }

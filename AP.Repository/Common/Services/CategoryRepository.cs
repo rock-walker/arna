@@ -33,22 +33,27 @@ namespace AP.Repository.Common.Services
             return categories;
         }
 
-        public IEnumerable<CategoryModel> GetHierarchical()
+        public IEnumerable<CategoryModel> GetHierarchical(int root)
         {
             var categories = DbContext.Categories.ToList();
+            return BuildCategories(categories, root);
+        }
+
+        public IEnumerable<CategoryModel> GetTopLevel()
+        {
+            return DbContext.Categories.Select(x => x.MapTo());
+        }
+
+        private IEnumerable<CategoryModel> BuildCategories(List<CategoryData> categories, int root = 0)
+        {
             if (!categories.Any())
             {
                 //throw Exception here
                 ;
             }
 
-            var builtCategories = MenuBuilder.BuildCategoriesHierarchy(categories.OfType<CategoryData>(), 0);
+            var builtCategories = MenuBuilder.BuildCategoriesHierarchy(categories.OfType<CategoryData>(), root);
             return builtCategories.Select(x => x.MapTo());
-        }
-
-        public IEnumerable<CategoryModel> GetTopLevel()
-        {
-            return DbContext.Categories.Select(x => x.MapTo());
         }
     }
 }

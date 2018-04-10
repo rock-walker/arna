@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using AP.Business.Model.Enums;
 using AP.ViewModel.Workshop;
 using EntityFramework.DbContextScope.Interfaces;
@@ -10,20 +9,20 @@ namespace AP.Business.Domain.Common
 {
     public class AutobrandService : IAutobrandService
     {
-        private readonly IDbContextScopeFactory _dbContextScope;
-        private readonly IAutobrandRepository _autobrandRepository;
+        private readonly IDbContextScopeFactory dbContextScope;
+        private readonly IAutobrandRepository autobrandRepository;
 
         public AutobrandService(IDbContextScopeFactory scope, IAutobrandRepository repo)
         {
-            _dbContextScope = scope;
-            _autobrandRepository = repo;
+            dbContextScope = scope;
+            autobrandRepository = repo;
         }
 
-        public async Task<IEnumerable<AutobrandViewModel>> Get(CarClassification autoType)
+        public IEnumerable<AutobrandViewModel> Get(CarClassification autoType)
         {
-            using (var dbContext = _dbContextScope.CreateReadOnly())
+            using (var dbContext = dbContextScope.CreateReadOnly())
             {
-                var autoBrandsData = await _autobrandRepository.GetAutoBrands(autoType);
+                var autoBrandsData = autobrandRepository.GetAutoBrands(autoType);
                 var output = Mapper.Map<IEnumerable<AutobrandViewModel>>(autoBrandsData);
 
                 return output;

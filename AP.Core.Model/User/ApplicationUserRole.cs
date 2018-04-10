@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AP.Core.Model.User
 {
-    public class ApplicationUserLogin: IdentityUserLogin<Guid> { }
+    //public class ApplicationUserLogin: IdentityUserLogin<Guid> { }
     public class ApplicationRoleClaim: IdentityRoleClaim<Guid> { }
     public class ApplicationUserToken: IdentityUserToken<Guid> { }
 }

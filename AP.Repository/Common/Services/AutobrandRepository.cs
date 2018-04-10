@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using AP.Business.Model.Enums;
 using AP.EntityModel.AutoDomain;
-using System.Threading.Tasks;
 using AP.Repository.Context;
 using EntityFramework.DbContextScope.Interfaces;
 using System.Linq;
@@ -16,11 +15,11 @@ namespace AP.Repository.Common.Services
         {
         }
 
-        public async Task<IEnumerable<AutoBrandData>> GetAutoBrands(CarClassification autoType)
+        public IEnumerable<AutoBrandData> GetAutoBrands(CarClassification autoType)
         {
-            return await Task.Run(() => 
-                DbContext.Autobrands
-                    .Where(x => (x.AutoClassification & autoType) == autoType));
+            return DbContext
+                    .Autobrands
+                    .Where(x => (x.AutoClassification & autoType) == autoType);
         }
     }
 }

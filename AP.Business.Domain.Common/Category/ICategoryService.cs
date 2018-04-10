@@ -5,7 +5,7 @@ namespace AP.Business.Domain.Common.Category
 {
     public interface ICategoryService
     {
-        IEnumerable<CategoryViewModel> GetHierarchical();
+        IEnumerable<CategoryViewModel> GetHierarchical(int root);
         IEnumerable<CategoryViewModel> GetTopLevel();
         IEnumerable<CategoryViewModel> Get(IEnumerable<int> ids);
     }

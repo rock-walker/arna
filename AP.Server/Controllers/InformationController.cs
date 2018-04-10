@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using AP.ViewModel.Common;
 using Microsoft.AspNetCore.Mvc;
 using AP.ViewModel.Workshop;
@@ -11,22 +10,23 @@ using AP.Business.Domain.Common.Category;
 namespace AP.Application.Controllers
 {
     [AllowAnonymous]
-    [Route("api/[controller]/[action]")]
+    [Route("api/[controller]")]
     public class InfoController : Controller
     {
         private readonly ICategoryService _menu;
-        private readonly IAutobrandService _autobrands;
+        private readonly IAutobrandService autobrands;
 
         public InfoController(ICategoryService menu, IAutobrandService autobrands)
         {
             _menu = menu;
-            _autobrands = autobrands;
+            this.autobrands = autobrands;
         }
 
-        [HttpGet]
-        public IEnumerable<CategoryViewModel> GetHierarchical()
+        [HttpGet("workshop-categories")]
+        public IEnumerable<CategoryViewModel> GetWorkshopCategories()
         {
-            return _menu.GetHierarchical();
+            const int root = 1; //means "carservice" menu type;
+            return _menu.GetHierarchical(root);
         }
 
         [HttpGet]
@@ -35,10 +35,10 @@ namespace AP.Application.Controllers
             return _menu.GetTopLevel();
         }
 
-        [HttpGet]
-        public async Task<IEnumerable<AutobrandViewModel>> GetAutobrands(CarClassification autoType)
+        [HttpGet("manufacturers")]
+        public IEnumerable<AutobrandViewModel> GetAutobrands(CarClassification autoType)
         {
-            return await _autobrands.Get(autoType);
+            return autobrands.Get(autoType);
         }
     }
 }
