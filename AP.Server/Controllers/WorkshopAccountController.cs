@@ -119,6 +119,7 @@ namespace AP.Server.Controllers
             return WorkshopAccountResult.WorkshopError;
         }
 
+        [HttpGet]
         [Route("/{slug}/[action]")]
         public StatusCodeResult Publish()
         {
@@ -134,6 +135,7 @@ namespace AP.Server.Controllers
             return Ok();
         }
 
+        [HttpGet]
         [Route("/{slug}/[action]")]
         public StatusCodeResult Unpublish()
         {

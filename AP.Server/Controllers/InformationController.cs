@@ -29,7 +29,7 @@ namespace AP.Application.Controllers
             return _menu.GetHierarchical(root);
         }
 
-        [HttpGet]
+        [HttpGet("get-top-level")]
         public IEnumerable<CategoryViewModel> GetTopLevel()
         {
             return _menu.GetTopLevel();

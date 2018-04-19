@@ -36,8 +36,11 @@ namespace AP.Business.Domain.Common.Category
 
         public IEnumerable<CategoryViewModel> GetTopLevel()
         {
-            var topLevelMenu = _categories.GetTopLevel();
-            return topLevelMenu.Select(x => x.MapTo());
+            using (var scope = scopeFactory.CreateReadOnly())
+            {
+                var topLevelMenu = _categories.GetTopLevel();
+                return topLevelMenu.Select(x => x.MapTo());
+            }
         }
     }
 }

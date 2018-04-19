@@ -11,7 +11,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
   </PropertyGroup>
   <ItemGroup>
     <DestinationConnectionStrings Include="AutoPortalConnection">
-      <Value>Data Source=tcp:autoportal.database.windows.net,1433;Initial Catalog=AutoPortalDb1;User Id=rock-walker@autoportal;Password=celebrity99+</Value>
+      <Value>Data Source=tcp:autoportal.database.windows.net,1433;Initial Catalog=AutoPortalDb;User Id=rock-walker@autoportal;Password=celebrity99+</Value>
     </DestinationConnectionStrings>
   </ItemGroup>
 </Project>

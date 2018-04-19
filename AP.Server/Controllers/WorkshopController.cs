@@ -27,11 +27,13 @@ namespace AP.Application
             this.factory = factory;
         }
 
+        [HttpGet]
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()
         {
             return await workshop.GetAll();
         }
 
+        [HttpGet]
         public IEnumerable<WorkshopShortViewModel> GetAround(double latitude, double longitude, double distance)
         {
             if (distance < 0.1)
@@ -42,6 +44,7 @@ namespace AP.Application
             return workshop.GetByLocation(latitude, longitude,  distance);
         }
 
+        [HttpGet]
         public IEnumerable<WorkshopViewModel> GetByCode(
             [ModelBinder(BinderType = typeof(CommaDelimitedArrayModelBinder))]
             IEnumerable<string> workshops)
@@ -49,6 +52,7 @@ namespace AP.Application
             return workshop.GetBySlug(workshops);
         }
 
+        [HttpGet]
         [Route("/{workshopCode}/")]
         public WorkshopViewModel GetByCode()
         {

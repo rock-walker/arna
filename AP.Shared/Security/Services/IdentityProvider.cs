@@ -41,6 +41,20 @@ namespace AP.Shared.Security.Services
             var roles = await userManager.GetRolesAsync(user);
 
             var result = await signInManager.CheckPasswordSignInAsync(user, info.Password, lockoutOnFailure: false);
+
+            if (result.IsNotAllowed)
+            {
+                if (!user.PhoneNumberConfirmed)
+                {
+                    return new JwtIdentity
+                    {
+                        User = user,
+                        LoggedInStatus = IdentityStatus.TwoFactorRequiresError,
+                        Roles = roles
+                    };
+                }
+            }
+
             if (result.Succeeded)
             {
                 logger.LogInformation($"User {info.User} is logged in successfully.");
@@ -155,7 +169,13 @@ namespace AP.Shared.Security.Services
         public async Task<JwtIdentity> ProvideOauthWorkflow(LoginInfo info)
         {
             var identity = await OauthSignIn(info);
-            if (identity.LoggedInStatus == IdentityStatus.LoggedInSuccess)
+            var status = identity.LoggedInStatus;
+            if (status == IdentityStatus.TwoFactorRequiresError)
+            {
+                logger.LogWarning($"User {identity.User.UserName} didn't completed registration, the phone number wasn't verified.");
+            }
+
+            if (status == IdentityStatus.LoggedInSuccess || status == IdentityStatus.TwoFactorRequiresError)
             {
                 var token = GenerateRefreshToken(identity);
                 identity.RefreshToken = token;

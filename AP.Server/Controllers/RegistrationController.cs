@@ -18,7 +18,7 @@
     using Microsoft.Extensions.Logging;
     using System.Security.Principal;
 
-    [Authorize(Roles = "Client,Accomplished,Administrator,PowerUser")]
+    [Authorize(Roles = "Client,Administrator,PowerUser")]
     [Route("api/[controller]/[action]")]
     public class RegistrationController : WorkshopTenantController
     {
@@ -46,6 +46,7 @@
             _logger = logger;
         }
 
+        [HttpGet]
         [Route("/{workshopCode}/register")]
         public Task<OrderViewModel> StartRegistration(Guid? orderId = null)
         {

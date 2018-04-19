@@ -6,7 +6,6 @@ using AP.Repository.Workshop.Contracts;
 using AP.Core.GeoLocation;
 using EntityFramework.DbContextScope.Interfaces;
 using AutoMapper;
-using AP.Infrastructure.Messaging;
 using AP.Repository.Common.Contracts;
 using System.Linq;
 
@@ -18,16 +17,14 @@ namespace AP.Business.AutoDomain.Workshop.Services
         private readonly IDbContextScopeFactory _dbContextScope;
         private readonly IWorkshopRepository _workshopRepo;
         private readonly ICategoryRepository categoryRepo;
-        private readonly IEventBus eventBus;
 
         public WorkshopService(IDbContextScopeFactory scope, 
-            IWorkshopRepository repository, IEventBus eventBus,
+            IWorkshopRepository repository,
             ICategoryRepository categoryRepo)
         {
             _workshopRepo = repository;
             _dbContextScope = scope;
             this.categoryRepo = categoryRepo;
-            this.eventBus = eventBus;
         }
 
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()

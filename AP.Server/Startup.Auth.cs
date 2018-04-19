@@ -22,6 +22,7 @@ namespace AP.Server
         private void ConfigureAuth(IApplicationBuilder app, IHostingEnvironment env)
         {
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("TokenAuthentication:SecretKey").Value));
+            var expirationMins = int.Parse(Configuration.GetSection("TokenAuthentication:ExpMinOauth").Value);
 
             var tokenProviderOptions = new TokenProviderOptions
             {
@@ -29,6 +30,7 @@ namespace AP.Server
                 RefreshTokenPath = Configuration.GetSection("TokenAuthentication:RefreshTokenPath").Value,
                 Audience = Configuration.GetSection("TokenAuthentication:Audience").Value,
                 Issuer = Configuration.GetSection("TokenAuthentication:Issuer").Value,
+                Expiration = TimeSpan.FromMinutes(expirationMins),
                 SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
                 IdentityResolver = GetIdentity,
                 RefreshTokenResolver = GetRefreshToken

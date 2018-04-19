@@ -16,6 +16,7 @@ using AP.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 using AP.Core.Model.User;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace AP.Server
 {
@@ -91,10 +92,13 @@ namespace AP.Server
 
                 services.AddLogging();
 
+                services.AddSwaggerGen(c =>
+                {
+                    c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+                });
+
                 DiContainer.RegisterScopes(services, Configuration);
                 bookingContainer.CreateContainer(services, loggerFactory);
-
-                AutomapperConfig.RegisterModels();
             }
             catch(Exception ex)
             {
@@ -133,9 +137,16 @@ namespace AP.Server
             //app.UseIdentity();
 
             app.UseMvc();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
 
             StartListen(app.ApplicationServices);
             StartupRoles.Create(app.ApplicationServices).Wait();
+
+            AutomapperConfig.RegisterModels();
         }
 
         private static void StartListen(IServiceProvider provider)

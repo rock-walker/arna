@@ -15,11 +15,10 @@ using AP.ViewModel.Account.Manage;
 using AP.Core.Model;
 using AP.Shared.Security.Contracts;
 using AutoMapper;
-using System.Security.Principal;
 using Microsoft.Extensions.Localization;
 using AP.Server.Controllers;
 
-namespace WebApplication6.Controllers
+namespace WebApplication.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
@@ -60,6 +59,7 @@ namespace WebApplication6.Controllers
 
         [HttpGet]
         [AllowAnonymous]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<string> Login(string returnUrl = null)
         {
             // Clear the existing external cookie to ensure a clean login process
@@ -68,7 +68,7 @@ namespace WebApplication6.Controllers
             return "Please enter your credentials to login";
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IdentityStatus> Login([FromBody]LoginViewModel model)
         {
@@ -81,7 +81,7 @@ namespace WebApplication6.Controllers
             return IdentityStatus.InvalidRequestBody;
         }
 
-        [HttpPost]
+        [HttpPost("token")]
         [AllowAnonymous]
         public StatusCodeResult Token([FromBody] LoginViewModel model)
         {
@@ -94,14 +94,14 @@ namespace WebApplication6.Controllers
             return NotFound();
         }
 
-        [HttpPost]
+        [HttpPost("refresh-token")]
         [AllowAnonymous]
         public StatusCodeResult RefreshToken([FromBody] RefreshToken model)
         {
             return Ok();
         }
 
-        [HttpPost]
+        [HttpPost("register-email")]
         [AllowAnonymous]
         public async Task<IdentityStatus> RegisterByEmail(RegisterViewModel model)
         {
@@ -154,15 +154,17 @@ namespace WebApplication6.Controllers
 
                     await accountService.AddRole(user, model.Role);
                     var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.Phone);
+                    //TODO: uncomment before Production
 #if DEBUG
 #else
-                    await _smsSender.SendSmsAsync(model.Phone, "Your security code is: " + code);
+                    //await _smsSender.SendSmsAsync(model.Phone, "Your security code is: " + code);
 #endif
                     logger.LogInformation($"Your verification code is: {code}");
 
                     var jwt = await accountService.RefreshJwt(user);
                     return new VerifyPhoneNumberViewModel
                     {
+                        Code = code,
                         Phone = model.Phone,
                         AccessToken = jwt.AccessToken,
                         RefreshToken = jwt.RefreshToken
@@ -186,6 +188,38 @@ namespace WebApplication6.Controllers
             }
 
             return null;
+        }
+
+        [HttpGet("resend-code")]
+        [Authorize(Roles="Client,Master")]
+        public async Task<VerifyPhoneNumberViewModel> ResendVerifyCode(string phone)
+        {
+            if (string.IsNullOrEmpty(phone))
+            {
+                return new VerifyPhoneNumberViewModel
+                {
+                    Message = "Phone couldn't be empty",
+                    Status = IdentityStatus.TwoFactorRequiresError
+                };
+            }
+            var formattedPhone = "+" + phone.TrimStart();
+            var user = await GetCurrentUser();
+            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, formattedPhone);
+            //TODO: uncomment before Production
+#if DEBUG
+#else
+            //await _smsSender.SendSmsAsync(model.Phone, "Your security code is: " + code);
+#endif
+            logger.LogInformation($"Your verification code is: {code}");
+
+            var jwt = await accountService.RefreshJwt(user);
+            return new VerifyPhoneNumberViewModel
+            {
+                Code = code,
+                Phone = formattedPhone,
+                AccessToken = jwt.AccessToken,
+                RefreshToken = jwt.RefreshToken
+            };
         }
 
         [HttpPost("verify-phone")]
@@ -218,9 +252,7 @@ namespace WebApplication6.Controllers
             return jwt;
         }
 
-        //
-        // POST: /Account/Logout
-        [HttpPost]
+        [HttpPost("logout")]
         public async Task Logout()
         {
             await _signInManager.SignOutAsync();
@@ -228,9 +260,7 @@ namespace WebApplication6.Controllers
             //return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
-        //
-        // POST: /Account/ExternalLogin
-        [HttpPost]
+        [HttpPost("external-login")]
         [AllowAnonymous]
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
@@ -240,9 +270,7 @@ namespace WebApplication6.Controllers
             return Challenge(properties, provider);
         }
 
-        //
-        // GET: /Account/ExternalLoginCallback
-        [HttpGet]
+        [HttpGet("external-login-callback")]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
@@ -282,9 +310,7 @@ namespace WebApplication6.Controllers
             }
         }
 
-        //
-        // POST: /Account/ExternalLoginConfirmation
-        [HttpPost]
+        [HttpPost("external-login-confirmation")]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null)
         {
@@ -315,8 +341,7 @@ namespace WebApplication6.Controllers
             return View(model);
         }
 
-        // GET: /Account/ConfirmEmail
-        [HttpGet]
+        [HttpGet("confirm-email")]
         [AllowAnonymous]
         public async Task<bool> ConfirmEmail(string userId, string code)
         {
@@ -333,18 +358,14 @@ namespace WebApplication6.Controllers
             return result.Succeeded;
         }
 
-        //
-        // GET: /Account/ForgotPassword
-        [HttpGet]
+        [HttpGet("forgot-password")]
         [AllowAnonymous]
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
-        //
-        // POST: /Account/ForgotPassword
-        [HttpPost]
+        [HttpPost("forgot-password")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
@@ -370,27 +391,7 @@ namespace WebApplication6.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Account/ForgotPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
-
-        //
-        // GET: /Account/ResetPassword
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
-        {
-            return code == null ? View("Error") : View();
-        }
-
-        //
-        // POST: /Account/ResetPassword
-        [HttpPost]
+        [HttpPost("reset-password")]
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -402,29 +403,18 @@ namespace WebApplication6.Controllers
             if (user == null)
             {
                 // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                throw new ArgumentException("The user doesn't exist");
             }
             var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                return Ok();
             }
             AddErrors(result);
             return View();
         }
 
-        //
-        // GET: /Account/ResetPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPasswordConfirmation()
-        {
-            return View();
-        }
-
-        //
-        // GET: /Account/SendCode
-        [HttpGet]
+        [HttpGet("send-code")]
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
         {
@@ -438,9 +428,7 @@ namespace WebApplication6.Controllers
             return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
 
-        //
-        // POST: /Account/SendCode
-        [HttpPost]
+        [HttpPost("send-code")]
         [AllowAnonymous]
         public async Task<IActionResult> SendCode(SendCodeViewModel model)
         {
@@ -475,9 +463,7 @@ namespace WebApplication6.Controllers
             return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
         }
 
-        //
-        // GET: /Account/VerifyCode
-        [HttpGet]
+        [HttpGet("verify-code")]
         [AllowAnonymous]
         public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
         {
@@ -490,9 +476,7 @@ namespace WebApplication6.Controllers
             return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
 
-        //
-        // POST: /Account/VerifyCode
-        [HttpPost]
+        [HttpPost("verify-code")]
         [AllowAnonymous]
         public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
         {
@@ -519,14 +503,6 @@ namespace WebApplication6.Controllers
                 ModelState.AddModelError(string.Empty, "Invalid code.");
                 return View(model);
             }
-        }
-
-        //
-        // GET /Account/AccessDenied
-        [HttpGet]
-        public IActionResult AccessDenied()
-        {
-            return View();
         }
 
 #region Helpers

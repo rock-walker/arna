@@ -85,6 +85,7 @@ namespace AP.Core.User.Authentication
         public static TokenProviderOptions InitializeOptions(IConfigurationRoot config)
         {
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(config.GetSection("TokenAuthentication:SecretKey").Value));
+            var expirationMins = int.Parse(config.GetSection("TokenAuthentication:ExpMinOauth").Value);
 
             var tokenProviderOptions = new TokenProviderOptions
             {
@@ -93,6 +94,7 @@ namespace AP.Core.User.Authentication
                 Audience = config.GetSection("TokenAuthentication:Audience").Value,
                 Issuer = config.GetSection("TokenAuthentication:Issuer").Value,
                 SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
+                Expiration = TimeSpan.FromMinutes(expirationMins)
             };
 
             return tokenProviderOptions;
