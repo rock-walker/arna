@@ -15,7 +15,7 @@ namespace AP.Application
 {
     //[Authorize(Roles = "Client, Master, Administrator, PowerUser, Moderator")]
     [AllowAnonymous]
-    [Route("api/[controller]/[action]")]
+    [Route("api/[controller]")]
     public class WorkshopController : WorkshopTenantController
     {
         private readonly IWorkshopService workshop;
@@ -27,13 +27,13 @@ namespace AP.Application
             this.factory = factory;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IEnumerable<WorkshopShortViewModel>> GetAll()
         {
             return await workshop.GetAll();
         }
 
-        [HttpGet]
+        [HttpGet("around")]
         public IEnumerable<WorkshopShortViewModel> GetAround(double latitude, double longitude, double distance)
         {
             if (distance < 0.1)
@@ -43,17 +43,16 @@ namespace AP.Application
 
             return workshop.GetByLocation(latitude, longitude,  distance);
         }
-
-        [HttpGet]
+        
+        [HttpGet("get-by-code")]
         public IEnumerable<WorkshopViewModel> GetByCode(
             [ModelBinder(BinderType = typeof(CommaDelimitedArrayModelBinder))]
             IEnumerable<string> workshops)
         {
             return workshop.GetBySlug(workshops);
         }
-
-        [HttpGet]
-        [Route("/{workshopCode}/")]
+        
+        [HttpGet("/api/{workshopCode}/")]
         public WorkshopViewModel GetByCode()
         {
             using (var scope = factory.CreateReadOnly())

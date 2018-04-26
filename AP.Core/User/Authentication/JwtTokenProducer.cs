@@ -2,7 +2,6 @@
 using AP.Core.User.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -72,14 +71,12 @@ namespace AP.Core.User.Authentication
 
         private static Claim AddIosSpecificClaims(IEnumerable<Claim> claims)
         {
-            var permissions = claims.Select(x => (int)Enum.Parse(typeof(ApplicationClaims), x.Value));
-            return new Claim(_iosPermissionsClaim, JsonConvert.SerializeObject(permissions));
+            return new Claim(_iosPermissionsClaim, claims.LastOrDefault().Value);
         }
 
         private static Claim AddIosSpecificRoles(IEnumerable<string> roles)
         {
-            var intRoles = roles.Select(x => (int)Enum.Parse(typeof(Roles), x));
-            return new Claim(_iosRoleClaim, JsonConvert.SerializeObject(intRoles)); 
+            return new Claim(_iosRoleClaim, roles.FirstOrDefault()); 
         }
 
         public static TokenProviderOptions InitializeOptions(IConfigurationRoot config)
